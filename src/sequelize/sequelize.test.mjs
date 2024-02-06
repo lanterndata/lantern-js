@@ -11,32 +11,36 @@ describe('Sequelize', () => {
     await sequelize.query('DROP TABLE IF EXISTS movies;');
 
     await sequelize.close();
-  })
+  });
 
   it('should create the lantern extension ', async () => {
     sequelize = new Sequelize(process.env.DATABASE_URL, {
-      logging: false
+      logging: false,
     });
 
     await sequelize.query('CREATE EXTENSION IF NOT EXISTS lantern;');
 
     sequelize.close();
-  })
+  });
 
   it('should create a table [REAL] with index and data', async () => {
     // reconnect after the lantern extension has been created
     sequelize = new Sequelize(process.env.DATABASE_URL, {
-      logging: false
+      logging: false,
     });
 
-    Book = sequelize.define('Book', {
-      embedding: {
-        type: DataTypes.ARRAY(DataTypes.REAL),
-      }
-    }, {
-      modelName: 'Book',
-      tableName: 'books',
-    });
+    Book = sequelize.define(
+      'Book',
+      {
+        embedding: {
+          type: DataTypes.ARRAY(DataTypes.REAL),
+        },
+      },
+      {
+        modelName: 'Book',
+        tableName: 'books',
+      },
+    );
 
     await Book.sync({ force: true });
 
@@ -51,14 +55,18 @@ describe('Sequelize', () => {
   });
 
   it('should create a table [INT] with index and data', async () => {
-    Movie = sequelize.define('Movie', {
-      embedding: {
-        type: DataTypes.ARRAY(DataTypes.INTEGER),
-      }
-    }, {
-      modelName: 'Movie',
-      tableName: 'movies',
-    });
+    Movie = sequelize.define(
+      'Movie',
+      {
+        embedding: {
+          type: DataTypes.ARRAY(DataTypes.INTEGER),
+        },
+      },
+      {
+        modelName: 'Movie',
+        tableName: 'movies',
+      },
+    );
 
     await Movie.sync({ force: true });
 
@@ -75,10 +83,13 @@ describe('Sequelize', () => {
   it('should find using L2 distance', async () => {
     let books = await Book.findAll({
       order: lantern.l2('embedding', [1, 1, 1], sequelize),
-      limit: 5
+      limit: 5,
     });
 
-    assert.deepStrictEqual(books.map(v => v.id), [1, 3, 2]);
+    assert.deepStrictEqual(
+      books.map((v) => v.id),
+      [1, 3, 2],
+    );
     assert.deepStrictEqual(books[0].embedding, [1, 1, 1]);
     assert.deepStrictEqual(books[1].embedding, [1, 1, 2]);
     assert.deepStrictEqual(books[2].embedding, [2, 2, 2]);
@@ -89,10 +100,13 @@ describe('Sequelize', () => {
 
     let books = await Book.findAll({
       order: lantern.cosine('embedding', [1, 1, 1], sequelize),
-      limit: 5
+      limit: 5,
     });
 
-    assert.deepStrictEqual(books.map(v => v.id), [1, 2, 3, 4]);
+    assert.deepStrictEqual(
+      books.map((v) => v.id),
+      [1, 2, 3, 4],
+    );
   });
 
   it('should find using Hamming distance', async () => {
@@ -100,14 +114,16 @@ describe('Sequelize', () => {
 
     let movies = await Movie.findAll({
       order: lantern.hamming('embedding', [1, 1, 1], sequelize),
-      limit: 5
+      limit: 5,
     });
 
-    assert.deepStrictEqual(movies.map(v => v.id), [1, 3, 2]);
+    assert.deepStrictEqual(
+      movies.map((v) => v.id),
+      [1, 3, 2],
+    );
   });
 
   it('should fail because of wrong embedding dimensions', async () => {
-    await Book.create({ embedding: [1] })
-      .catch(e => assert.equal(e.message, 'Wrong number of dimensions: 1 instead of 3 expected'));
-  })
+    await Book.create({ embedding: [1] }).catch((e) => assert.equal(e.message, 'Wrong number of dimensions: 1 instead of 3 expected'));
+  });
 });

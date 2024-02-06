@@ -6,6 +6,7 @@ function distance(op, column, value, sequelize) {
   return sequelize.literal(`${quotedColumn} ${op} ${escapedValue}`);
 }
 
+
 function l2(column, value, sequelize) {
   return distance('<->', column, value, sequelize);
 }
