@@ -1,4 +1,5 @@
 # lantern/knex
+
 ---
 
 ## Setting up LanternDB Extension
