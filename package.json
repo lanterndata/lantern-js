@@ -1,0 +1,55 @@
+{
+  "name": "lantern",
+  "version": "1.0.0",
+  "description": "JavaScript/Typescript ORMs for Lantern Vector Database",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --test ./src/**/*.test.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lanterndata/lantern-node"
+  },
+  "keywords": [
+    "lantern",
+    "lanterndb",
+    "vector",
+    "vector-search",
+    "postgres",
+    "postgresql"
+  ],
+  "author": "nairihar",
+  "license": "BSL",
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./sequelize": {
+      "types": "./src/sequelize/sequelize.d.ts",
+      "default": "./src/sequelize/sequelize.js"
+    },
+    "./utils": {
+      "types": "./src/_common/utils.d.ts",
+      "default": "./src/_common/utils.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "src/index.d.ts"
+      ],
+      "sequelize": [
+        "src/sequelize/sequelize.d.ts"
+      ],
+      "utils": [
+        "src/_common/utils.d.ts"
+      ]
+    }
+  },
+  "devDependencies": {
+    "pg": "^8.11.3",
+    "sequelize": "^6.36.0"
+  }
+}
