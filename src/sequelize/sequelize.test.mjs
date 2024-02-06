@@ -29,8 +29,6 @@ describe('Sequelize', () => {
       logging: false
     });
 
-    lantern.supportIndexes(sequelize);
-
     Book = sequelize.define('Book', {
       embedding: {
         type: DataTypes.ARRAY(DataTypes.REAL),
@@ -38,22 +36,14 @@ describe('Sequelize', () => {
     }, {
       modelName: 'Book',
       tableName: 'books',
-      indexes: [
-        {
-          fields: ['embedding'],
-          using: 'hnsw',
-          operator: 'dist_l2sq_ops',
-          with: {
-            M: 2,
-            ef: 4,
-            dim: 3,
-            ef_construction: 10
-          },
-        }
-      ]
     });
 
     await Book.sync({ force: true });
+
+    await sequelize.query(`
+      CREATE INDEX book_index ON books USING hnsw(embedding dist_l2sq_ops)
+      WITH (M=2, ef_construction=10, ef=4, dim=3);
+    `);
 
     await Book.create({ embedding: [1, 1, 1] });
     await Book.create({ embedding: [2, 2, 2] });
@@ -68,22 +58,14 @@ describe('Sequelize', () => {
     }, {
       modelName: 'Movie',
       tableName: 'movies',
-      indexes: [
-        {
-          fields: ['embedding'],
-          using: 'hnsw',
-          operator: 'dist_hamming_ops',
-          with: {
-            M: 2,
-            ef: 4,
-            dim: 3,
-            ef_construction: 10
-          },
-        }
-      ]
     });
 
     await Movie.sync({ force: true });
+
+    await sequelize.query(`
+      CREATE INDEX movie_index ON movies USING hnsw(embedding dist_hamming_ops)
+      WITH (M=2, ef_construction=10, ef=4, dim=3);
+    `);
 
     await Movie.create({ embedding: [1, 1, 1] });
     await Movie.create({ embedding: [2, 2, 2] });

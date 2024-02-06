@@ -4,7 +4,7 @@
   "description": "JavaScript/Typescript ORMs for Lantern Vector Database",
   "main": "index.js",
   "scripts": {
-    "test": "node --test ./src/**/*.test.mjs"
+    "test": "node --env-file=.env --test ./src/**/*.test.mjs"
   },
   "repository": {
     "type": "git",
