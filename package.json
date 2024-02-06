@@ -25,6 +25,10 @@
       "types": "./src/index.d.ts",
       "default": "./src/index.js"
     },
+    "./knex": {
+      "types": "./src/knex/knex.d.ts",
+      "default": "./src/knex/knex.js"
+    },
     "./sequelize": {
       "types": "./src/sequelize/sequelize.d.ts",
       "default": "./src/sequelize/sequelize.js"
@@ -40,6 +44,9 @@
       "*": [
         "src/index.d.ts"
       ],
+      "knex": [
+        "src/sequelize/knex.d.ts"
+      ],
       "sequelize": [
         "src/sequelize/sequelize.d.ts"
       ],
@@ -49,6 +56,7 @@
     }
   },
   "devDependencies": {
+    "knex": "^3.1.0",
     "pg": "^8.11.3",
     "sequelize": "^6.36.0"
   }
