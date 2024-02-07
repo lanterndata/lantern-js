@@ -21,7 +21,8 @@ describe('Knex', () => {
       connection: process.env.DATABASE_URL,
     });
 
-    // await knex.schema.addExtension('lantern');
+    await knex.schema.addExtension('lantern');
+    await knex.schema.addExtension('lantern_extras');
   });
 
   it('should create a table [REAL] with index and data', async () => {
