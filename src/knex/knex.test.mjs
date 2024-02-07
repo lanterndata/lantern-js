@@ -192,4 +192,40 @@ describe('Knex', () => {
 
     assert.equal(bookEmbeddingsOrderd.length, 2);
   });
+
+  it('should create simple text embedding', async () => {
+    const embedding = await knex.generateTextEmbedding(TextEmbeddingModels.BAAI_BGE_BASE_EN, 'hello world');
+
+    assert.equal(embedding.rows[0].text_embedding.length, 768);
+  });
+
+  it('should create simple image embedding', async () => {
+    const embedding = await knex.generateImageEmbedding(ImageEmbeddingModels.CLIP_VIT_B_32_VISUAL, process.env.TEST_IMAGE_EMBEDDING_EXAMPLE_URL);
+
+    assert.equal(embedding.rows[0].image_embedding.length, 512);
+  });
+
+  it('select text embedding based on book names in the table', async () => {
+    const bookEmbeddings = await knex('books').select('name').select(knex.textEmbedding(TextEmbeddingModels.BAAI_BGE_BASE_EN, 'name')).whereNotNull('name');
+
+    assert.equal(bookEmbeddings.length, 2);
+
+    bookEmbeddings.forEach((book) => {
+      assert(book.name);
+      assert(Array.isArray(book.text_embedding));
+      assert(book.text_embedding.length > 0);
+    });
+  });
+
+  it('select text embedding based on book urls in the table', async () => {
+    const bookEmbeddings = await knex('books').select('url').select(knex.imageEmbedding(ImageEmbeddingModels.CLIP_VIT_B_32_VISUAL, 'url')).whereNotNull('url');
+
+    assert.equal(bookEmbeddings.length, 2);
+
+    bookEmbeddings.forEach((book) => {
+      assert(book.url);
+      assert(Array.isArray(book.image_embedding));
+      assert(book.image_embedding.length > 0);
+    });
+  });
 });

@@ -87,7 +87,7 @@ const bookTextEmbeddings = await knex('books').select('name').select(knex.textEm
 console.log(bookTextEmbeddings);
 
 // image embeddings
-const bookImageEmbeddings = await knex('books').select('url').select(knex.textEmbedding(ImageEmbeddingModels.BAAI_BGE_BASE_EN, 'url')).whereNotNull('url');
+const bookImageEmbeddings = await knex('books').select('url').select(knex.imageEmbedding(ImageEmbeddingModels.BAAI_BGE_BASE_EN, 'url')).whereNotNull('url');
 
 // [{ url: "...", text_embedding: [...] }]
 console.log(bookImageEmbeddings);
