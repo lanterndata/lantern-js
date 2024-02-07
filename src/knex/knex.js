@@ -1,5 +1,5 @@
 const knex = require('knex');
-const { fromSql, toSql } = require('../_common/utils');
+const { fromSql, toSql } = require('../_common/utils/sql');
 
 knex.SchemaBuilder.extend('addExtension', function(name) {
   return this.raw('CREATE EXTENSION IF NOT EXISTS ??', [name]);

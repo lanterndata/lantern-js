@@ -1,4 +1,4 @@
-const utils = require('../_common/utils');
+const utils = require('../_common/utils/sql');
 
 function distance(op, column, value, sequelize) {
   const quotedColumn = sequelize.dialect.queryGenerator.quoteIdentifier(column);
