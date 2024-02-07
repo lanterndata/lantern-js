@@ -115,6 +115,8 @@ describe('Knex', () => {
   it('select text embedding based on book names in the table', async () => {
     const bookEmbeddings = await knex('books').select('name').select(knex.textEmbedding(TextEmbeddingModels.BAAI_BGE_BASE_EN, 'name')).whereNotNull('name');
 
+    assert.equal(bookEmbeddings.length, 2);
+
     bookEmbeddings.forEach((book) => {
       assert(book.name);
       assert(Array.isArray(book.text_embedding));
@@ -124,6 +126,8 @@ describe('Knex', () => {
 
   it('select text embedding based on book urls in the table', async () => {
     const bookEmbeddings = await knex('books').select('url').select(knex.imageEmbedding(ImageEmbeddingModels.CLIP_VIT_B_32_VISUAL, 'url')).whereNotNull('url');
+
+    assert.equal(bookEmbeddings.length, 2);
 
     bookEmbeddings.forEach((book) => {
       assert(book.url);
