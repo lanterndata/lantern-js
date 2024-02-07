@@ -34,7 +34,6 @@ jobs:
         run: |
           DATABASE_NAME=db_$(echo "${{ matrix.python }}" | tr '.' '_')
           PGPASSWORD=postgres psql -h localhost -U postgres -c "CREATE DATABASE $DATABASE_NAME"
-          TEST_IMAGE_EMBEDDING_EXAMPLE_URL=https://lantern.dev/images/home/footer.png
       - name: Install dependencies and test
         run: |
           python3 -m venv .venv
@@ -42,6 +41,7 @@ jobs:
           python3 -m pip install lantern-client
           DATABASE_NAME=db_$(echo "${{ matrix.python }}" | tr '.' '_')
           export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/$DATABASE_NAME"
+          export TEST_IMAGE_EMBEDDING_EXAMPLE_URL=https://lantern.dev/images/home/footer.png
           npm ci
           npm run prettier:check
           npm test
