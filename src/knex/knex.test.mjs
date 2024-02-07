@@ -1,6 +1,7 @@
 import Knex from 'knex';
 import assert from 'node:assert';
 import lantern from 'lantern/knex';
+import { TextEmbeddingModels, ImageEmbeddingModels } from 'lantern/embeddings';
 
 import { describe, it, after } from 'node:test';
 
@@ -21,11 +22,14 @@ describe('Knex', () => {
     });
 
     await knex.schema.addExtension('lantern');
+    await knex.schema.addExtension('lantern_extras');
   });
 
   it('should create a table [REAL] with index and data', async () => {
     await knex.schema.createTable('books', (table) => {
       table.increments('id');
+      table.specificType('url', 'TEXT');
+      table.specificType('name', 'TEXT');
       table.specificType('embedding', 'REAL[]');
 
       knex.raw(`
@@ -34,7 +38,7 @@ describe('Knex', () => {
       `);
     });
 
-    const newBooks = [{ embedding: lantern.toSql([1, 1, 1]) }, { embedding: lantern.toSql([2, 2, 2]) }, { embedding: lantern.toSql([1, 1, 2]) }, { embedding: null }];
+    const newBooks = [{ embedding: lantern.toSql([1, 1, 1]), name: 'Harry Potter', url: process.env.TEST_IMAGE_EMBEDDING_EXAMPLE_URL }, { embedding: lantern.toSql([2, 2, 2]), name: 'Greek Myths', url: process.env.TEST_IMAGE_EMBEDDING_EXAMPLE_URL }, { embedding: lantern.toSql([1, 1, 2]) }, { embedding: null }];
 
     await knex('books').insert(newBooks);
   });
@@ -94,5 +98,41 @@ describe('Knex', () => {
     await knex('books')
       .insert({ embedding: [1] })
       .catch((e) => assert.equal(e.message, 'Wrong number of dimensions: 1 instead of 3 expected'));
+  });
+
+  it('should create simple text embedding', async () => {
+    const embedding = await knex.generateTextEmbedding(TextEmbeddingModels.BAAI_BGE_BASE_EN, 'hello world');
+
+    assert.equal(embedding.rows[0].text_embedding.length, 768);
+  });
+
+  it('should create simple image embedding', async () => {
+    const embedding = await knex.generateImageEmbedding(ImageEmbeddingModels.CLIP_VIT_B_32_VISUAL, process.env.TEST_IMAGE_EMBEDDING_EXAMPLE_URL);
+
+    assert.equal(embedding.rows[0].image_embedding.length, 512);
+  });
+
+  it('select text embedding based on book names in the table', async () => {
+    const bookEmbeddings = await knex('books').select('name').select(knex.textEmbedding(TextEmbeddingModels.BAAI_BGE_BASE_EN, 'name')).whereNotNull('name');
+
+    assert.equal(bookEmbeddings.length, 2);
+
+    bookEmbeddings.forEach((book) => {
+      assert(book.name);
+      assert(Array.isArray(book.text_embedding));
+      assert(book.text_embedding.length > 0);
+    });
+  });
+
+  it('select text embedding based on book urls in the table', async () => {
+    const bookEmbeddings = await knex('books').select('url').select(knex.imageEmbedding(ImageEmbeddingModels.CLIP_VIT_B_32_VISUAL, 'url')).whereNotNull('url');
+
+    assert.equal(bookEmbeddings.length, 2);
+
+    bookEmbeddings.forEach((book) => {
+      assert(book.url);
+      assert(Array.isArray(book.image_embedding));
+      assert(book.image_embedding.length > 0);
+    });
   });
 });

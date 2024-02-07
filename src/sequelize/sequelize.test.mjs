@@ -19,6 +19,7 @@ describe('Sequelize', () => {
     });
 
     await sequelize.query('CREATE EXTENSION IF NOT EXISTS lantern;');
+    await sequelize.query('CREATE EXTENSION IF NOT EXISTS lantern_extras;');
 
     sequelize.close();
   });

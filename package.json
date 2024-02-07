@@ -35,9 +35,13 @@
       "types": "./src/sequelize/sequelize.d.ts",
       "default": "./src/sequelize/sequelize.js"
     },
-    "./utils": {
-      "types": "./src/_common/utils.d.ts",
-      "default": "./src/_common/utils.js"
+    "./embeddings": {
+      "types": "./src/_embeddings/embeddings.d.ts",
+      "default": "./src/_embeddings/embeddings.js"
+    },
+    "./sql": {
+      "types": "./src/_common/utils/sql.d.ts",
+      "default": "./src/_common/utils/sql.js"
     },
     "./package.json": "./package.json"
   },
@@ -52,8 +56,11 @@
       "sequelize": [
         "src/sequelize/sequelize.d.ts"
       ],
-      "utils": [
-        "src/_common/utils.d.ts"
+      "embeddings": [
+        "src/_embeddings/embeddings.d.ts"
+      ],
+      "sql": [
+        "src/_common/utils/sql.d.ts"
       ]
     }
   },
