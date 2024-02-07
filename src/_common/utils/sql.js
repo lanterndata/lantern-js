@@ -4,6 +4,6 @@ const fromSql = (value) =>
     .split(',')
     .map((v) => parseFloat(v));
 
-const toSql = (value) => `{${value.join(',')}}`;
+const toSql = (value) => (Array.isArray(value) ? `{${value.join(',')}}` : value);
 
 module.exports = { fromSql, toSql };

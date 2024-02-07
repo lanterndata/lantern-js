@@ -87,8 +87,23 @@ const bookTextEmbeddings = await knex('books').select('name').select(knex.textEm
 console.log(bookTextEmbeddings);
 
 // image embeddings
-const bookImageEmbeddings = await knex('books').select('url').select(knex.textEmbedding(ImageEmbeddingModels.BAAI_BGE_BASE_EN, 'url')).whereNotNull('url');
+const bookImageEmbeddings = await knex('books').select('url').select(knex.imageEmbedding(ImageEmbeddingModels.BAAI_BGE_BASE_EN, 'url')).whereNotNull('url');
 
 // [{ url: "...", text_embedding: [...] }]
 console.log(bookImageEmbeddings);
+```
+
+## Vector Searches with embedding generation
+
+```js
+const bookEmbeddingsOrderd = await knex('books')
+  .whereNotNull('url')
+  .orderBy(knex.l2('embedding', knex.imageEmbedding(ImageEmbeddingModels.CLIP_VIT_B_32_VISUAL, 'url')), 'desc')
+  .limit(2);
+```
+
+Corresponding SQL code:
+
+```sql
+SELECT * FROM "books" WHERE "url" IS NOT NULL ORDER BY "embedding" <-> image_embedding('clip/ViT-B-32-visual', "url") DESC LIMIT 2;
 ```
