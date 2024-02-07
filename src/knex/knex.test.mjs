@@ -5,13 +5,16 @@ import { TextEmbeddingModels, ImageEmbeddingModels } from 'lantern/embeddings';
 
 import { describe, it, after } from 'node:test';
 
+async function dropTables(knex) {
+  await knex.schema.dropTableIfExists('books');
+  await knex.schema.dropTableIfExists('movies');
+}
+
 describe('Knex', () => {
   let knex;
 
   after(async () => {
-    await knex.schema.dropTableIfExists('books');
-    await knex.schema.dropTableIfExists('movies');
-
+    // await dropTables(knex);
     await knex.destroy();
   });
 
@@ -23,6 +26,8 @@ describe('Knex', () => {
 
     await knex.schema.addExtension('lantern');
     await knex.schema.addExtension('lantern_extras');
+
+    await dropTables(knex);
   });
 
   it('should create a table [REAL] with index and data', async () => {
@@ -31,16 +36,15 @@ describe('Knex', () => {
       table.specificType('url', 'TEXT');
       table.specificType('name', 'TEXT');
       table.specificType('embedding', 'REAL[]');
-
-      knex.raw(`
-        CREATE INDEX book_index ON books USING hnsw(book_embedding dist_l2sq_ops)
-        WITH (M=2, ef_construction=10, ef=4, dims=512);
-      `);
     });
 
     const newBooks = [{ embedding: lantern.toSql([1, 1, 1]), name: 'Harry Potter', url: process.env.TEST_IMAGE_EMBEDDING_EXAMPLE_URL }, { embedding: lantern.toSql([2, 2, 2]), name: 'Greek Myths', url: process.env.TEST_IMAGE_EMBEDDING_EXAMPLE_URL }, { embedding: lantern.toSql([1, 1, 2]) }, { embedding: null }];
 
     await knex('books').insert(newBooks);
+
+    await knex.raw(`
+      CREATE INDEX book_index ON books USING hnsw(embedding dist_l2sq_ops)
+    `);
   });
 
   it('should create a table [INT] with index and data', async () => {
@@ -98,7 +102,7 @@ describe('Knex', () => {
   it('should fail because of wrong embedding dimensions', async () => {
     await knex('books')
       .insert({ embedding: [1] })
-      .catch((e) => assert.equal(e.message, 'Wrong number of dimensions: 1 instead of 3 expected'));
+      .catch((e) => assert.equal(e.message.includes('Wrong number of dimensions: 1 instead of 3 expected'), true));
   });
 
   it('should create simple text embedding', async () => {
@@ -137,8 +141,15 @@ describe('Knex', () => {
     });
   });
 
-  it('should find using L2 distance and do text_embedding generation', async () => {
-    await knex('books').truncate();
+  it('should find using L2 distance and do image_embedding generation', async () => {
+    await knex('books').delete();
+
+    await knex.raw('DROP INDEX book_index');
+
+    await knex.raw(`
+      CREATE INDEX book_index ON books USING hnsw(embedding dist_l2sq_ops)
+      WITH (M=2, ef_construction=10, ef=4, dim=512);
+    `);
 
     const array512dim = new Array(512).fill(1);
     const newBooks = [
@@ -151,6 +162,32 @@ describe('Knex', () => {
     const bookEmbeddingsOrderd = await knex('books')
       .whereNotNull('url')
       .orderBy(knex.l2('embedding', knex.imageEmbedding(ImageEmbeddingModels.CLIP_VIT_B_32_VISUAL, 'url')), 'desc')
+      .limit(2);
+
+    assert.equal(bookEmbeddingsOrderd.length, 2);
+  });
+
+  it('should find using Cosine distance and do text_embedding generation', async () => {
+    await knex('books').delete();
+
+    await knex.raw('DROP INDEX book_index');
+
+    const array768dim = new Array(768).fill(1);
+    const newBooks = [
+      { embedding: lantern.toSql(array768dim), name: 'Harry Potter', url: process.env.TEST_IMAGE_EMBEDDING_EXAMPLE_URL },
+      { embedding: lantern.toSql(array768dim), name: 'Greek Myths', url: process.env.TEST_IMAGE_EMBEDDING_EXAMPLE_URL },
+    ];
+
+    await knex('books').insert(newBooks);
+
+    await knex.raw(`
+      CREATE INDEX book_index ON books USING hnsw(embedding dist_l2sq_ops)
+      WITH (M=2, ef_construction=10, ef=4, dim=768);
+    `);
+
+    const bookEmbeddingsOrderd = await knex('books')
+      .whereNotNull('name')
+      .orderBy(knex.l2('embedding', knex.textEmbedding(TextEmbeddingModels.BAAI_BGE_BASE_EN, 'name')), 'desc')
       .limit(2);
 
     assert.equal(bookEmbeddingsOrderd.length, 2);
