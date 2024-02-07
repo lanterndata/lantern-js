@@ -34,7 +34,7 @@ describe('Knex', () => {
 
       knex.raw(`
         CREATE INDEX book_index ON books USING hnsw(book_embedding dist_l2sq_ops)
-        WITH (M=2, ef_construction=10, ef=4, dims=3);
+        WITH (M=2, ef_construction=10, ef=4, dims=512);
       `);
     });
 
@@ -67,6 +67,7 @@ describe('Knex', () => {
       books.map((v) => v.id),
       [1, 3, 2, 4],
     );
+
     assert.deepStrictEqual(books[0].embedding, [1, 1, 1]);
     assert.deepStrictEqual(books[1].embedding, [1, 1, 2]);
     assert.deepStrictEqual(books[2].embedding, [2, 2, 2]);
@@ -101,15 +102,15 @@ describe('Knex', () => {
   });
 
   it('should create simple text embedding', async () => {
-    const embedding = await knex.generateTextEmbedding(TextEmbeddingModels.BAAI_BGE_BASE_EN, 'hello world');
+    const result = await knex.generateTextEmbedding(TextEmbeddingModels.BAAI_BGE_BASE_EN, 'hello world');
 
-    assert.equal(embedding.rows[0].text_embedding.length, 768);
+    assert.equal(result.rows[0].text_embedding.length, 768);
   });
 
   it('should create simple image embedding', async () => {
-    const embedding = await knex.generateImageEmbedding(ImageEmbeddingModels.CLIP_VIT_B_32_VISUAL, process.env.TEST_IMAGE_EMBEDDING_EXAMPLE_URL);
+    const result = await knex.generateImageEmbedding(ImageEmbeddingModels.CLIP_VIT_B_32_VISUAL, process.env.TEST_IMAGE_EMBEDDING_EXAMPLE_URL);
 
-    assert.equal(embedding.rows[0].image_embedding.length, 512);
+    assert.equal(result.rows[0].image_embedding.length, 512);
   });
 
   it('select text embedding based on book names in the table', async () => {
@@ -134,5 +135,24 @@ describe('Knex', () => {
       assert(Array.isArray(book.image_embedding));
       assert(book.image_embedding.length > 0);
     });
+  });
+
+  it('should find using L2 distance and do text_embedding generation', async () => {
+    await knex('books').truncate();
+
+    const array512dim = new Array(512).fill(1);
+    const newBooks = [
+      { embedding: lantern.toSql(array512dim), name: 'Harry Potter', url: process.env.TEST_IMAGE_EMBEDDING_EXAMPLE_URL },
+      { embedding: lantern.toSql(array512dim), name: 'Greek Myths', url: process.env.TEST_IMAGE_EMBEDDING_EXAMPLE_URL },
+    ];
+
+    await knex('books').insert(newBooks);
+
+    const bookEmbeddingsOrderd = await knex('books')
+      .whereNotNull('url')
+      .orderBy(knex.l2('embedding', knex.imageEmbedding(ImageEmbeddingModels.CLIP_VIT_B_32_VISUAL, 'url')), 'desc')
+      .limit(2);
+
+    assert.equal(bookEmbeddingsOrderd.length, 2);
   });
 });
