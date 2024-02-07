@@ -12,7 +12,7 @@ function textEmbedding(modelName, value) {
     throw new Error('Text is not provided');
   }
 
-  return `image_embedding(${embedding}, ${escapeSingleQuotes(value)})`;
+  return `text_embedding(${embedding}, ${escapeSingleQuotes(value)})`;
 }
 
 function imageEmbedding(modelName, imageUrl) {
