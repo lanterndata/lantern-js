@@ -1,4 +1,5 @@
 # lantern/sequelize
+
 ---
 
 ## Setting up LanternDB Extension
@@ -16,16 +17,16 @@ Now we can performe vectore search using those distance algorithms.
 ```js
 await Book.findAll({
   order: lantern.l2('embedding', [1, 1, 1], sequelize),
-  limit: 2
+  limit: 2,
 });
 
 await Book.findAll({
   order: lantern.cosine('embedding', [1, 1, 1], sequelize),
-  limit: 2
+  limit: 2,
 });
 
 await Movie.findAll({
   order: lantern.hamming('embedding', [1, 1, 1], sequelize),
-  limit: 2
+  limit: 2,
 });
 ```

@@ -4,7 +4,9 @@
   "description": "JavaScript/Typescript ORMs for Lantern Vector Database",
   "main": "index.js",
   "scripts": {
-    "test": "node --test ./src/**/*.test.mjs"
+    "test": "node --test ./src/**/*.test.mjs",
+    "prettier:format": "prettier . --write",
+    "prettier:check": "prettier . --check"
   },
   "repository": {
     "type": "git",
@@ -33,6 +35,10 @@
       "types": "./src/sequelize/sequelize.d.ts",
       "default": "./src/sequelize/sequelize.js"
     },
+    "./embeddings": {
+      "types": "./src/_embeddings/embeddings.d.ts",
+      "default": "./src/_embeddings/embeddings.js"
+    },
     "./sql": {
       "types": "./src/_common/utils/sql.d.ts",
       "default": "./src/_common/utils/sql.js"
@@ -50,6 +56,9 @@
       "sequelize": [
         "src/sequelize/sequelize.d.ts"
       ],
+      "embeddings": [
+        "src/_embeddings/embeddings.d.ts"
+      ],
       "sql": [
         "src/_common/utils/sql.d.ts"
       ]
@@ -58,6 +67,7 @@
   "devDependencies": {
     "knex": "^3.1.0",
     "pg": "^8.11.3",
+    "prettier": "3.2.5",
     "sequelize": "^6.36.0"
   }
 }

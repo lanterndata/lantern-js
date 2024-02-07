@@ -2,7 +2,7 @@ name: Node.js CI
 
 on:
   push:
-    branches: [ '*' ]
+    branches: ['*']
 
 jobs:
   test-with-lanterndb:
@@ -42,4 +42,5 @@ jobs:
           DATABASE_NAME=db_$(echo "${{ matrix.python }}" | tr '.' '_')
           export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/$DATABASE_NAME"
           npm ci
+          npm run prettier:check
           npm test

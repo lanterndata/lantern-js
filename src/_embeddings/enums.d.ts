@@ -1,4 +1,4 @@
-declare namespace Enums {
+declare namespace TextEmbeddingModels {
   const MICROSOFT_MINILM_L12_V2: string;
   const CLIP_VIT_B_32_TEXTUAL: string;
   const BAAI_BGE_SMALL_EN: string;
@@ -23,6 +23,6 @@ declare namespace Enums {
   const COHERE_EMBED_MULTILINGUAL_LIGHT_V3_0: string;
 }
 
-declare namespace ImageEmbeddings {
+declare namespace ImageEmbeddingModels {
   const CLIP_VIT_B_32_VISUAL: string;
 }
