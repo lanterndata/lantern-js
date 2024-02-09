@@ -186,31 +186,36 @@ describe('Sequelize', () => {
   });
 
   it('select text embedding based on book names in the table', async () => {
-    const bookEmbeddings = await Book.findAll({
+    const bookTextEmbeddings = await Book.findAll({
       attributes: ['name', sequelize.textEmbedding(BAAI_BGE_BASE_EN, 'name')],
       where: { name: { [Op.not]: null } },
       limit: 5,
       raw: true,
     });
 
-    assert.equal(bookEmbeddings.length, 2);
+    assert.equal(bookTextEmbeddings.length, 2);
 
-    bookEmbeddings.forEach((book) => {
+    bookTextEmbeddings.forEach((book) => {
       assert(book.name);
       assert(Array.isArray(book.text_embedding));
       assert(book.text_embedding.length > 0);
     });
   });
 
-  // it('select text embedding based on book urls in the table', async () => {
-  //   const bookEmbeddings = await knex('books').select('url').select(knex.imageEmbedding(ImageEmbeddingModels.CLIP_VIT_B_32_VISUAL, 'url')).whereNotNull('url');
+  it('select text embedding based on book urls in the table', async () => {
+    const bookImageEmbeddings = await Book.findAll({
+      attributes: ['url', sequelize.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'url')],
+      where: { url: { [Op.not]: null } },
+      limit: 5,
+      raw: true,
+    });
 
-  //   assert.equal(bookEmbeddings.length, 2);
+    assert.equal(bookImageEmbeddings.length, 2);
 
-  //   bookEmbeddings.forEach((book) => {
-  //     assert(book.url);
-  //     assert(Array.isArray(book.image_embedding));
-  //     assert(book.image_embedding.length > 0);
-  //   });
-  // });
+    bookImageEmbeddings.forEach((book) => {
+      assert(book.url);
+      assert(Array.isArray(book.image_embedding));
+      assert(book.image_embedding.length > 0);
+    });
+  });
 });
