@@ -1,5 +1,5 @@
 const { escapeSingleQuotes } = require('../_common/utils/utils');
-const { TextEmbeddingModels, ImageEmbeddingModels } = require('./enums');
+const { TextEmbeddingModels, ImageEmbeddingModels, OpenAITextEmbeddingModels, CohereTextEmbeddingModels } = require('./enums');
 
 function textEmbedding(modelName, value) {
   const embedding = TextEmbeddingModels[modelName];
@@ -35,4 +35,6 @@ module.exports = {
 
   TextEmbeddingModels,
   ImageEmbeddingModels,
+  OpenAITextEmbeddingModels,
+  CohereTextEmbeddingModels,
 };

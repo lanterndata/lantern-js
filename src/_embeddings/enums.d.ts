@@ -26,3 +26,17 @@ declare namespace TextEmbeddingModels {
 declare namespace ImageEmbeddingModels {
   const CLIP_VIT_B_32_VISUAL: string;
 }
+
+declare namespace OpenAITextEmbeddingModels {
+  const OPENAI_TEXT_EMBEDDING_ADA_002: string;
+}
+
+declare namespace CohereTextEmbeddingModels {
+  const COHERE_EMBED_ENGLISH_V3_0: string;
+  const COHERE_EMBED_MULTILINGUAL_V3_0: string;
+  const COHERE_EMBED_ENGLISH_V2_0: string;
+  const COHERE_EMBED_ENGLISH_LIGHT_V2_0: string;
+  const COHERE_EMBED_MULTILINGUAL_V2_0: string;
+  const COHERE_EMBED_ENGLISH_LIGHT_V3_0: string;
+  const COHERE_EMBED_MULTILINGUAL_LIGHT_V3_0: string;
+}
