@@ -202,7 +202,7 @@ describe('Sequelize', () => {
     });
   });
 
-  it('select text embedding based on book urls in the table', async () => {
+  it('select image embedding based on book urls in the table', async () => {
     const bookImageEmbeddings = await Book.findAll({
       attributes: ['url', sequelize.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'url')],
       where: { url: { [Op.not]: null } },
@@ -217,5 +217,63 @@ describe('Sequelize', () => {
       assert(Array.isArray(book.image_embedding));
       assert(book.image_embedding.length > 0);
     });
+  });
+
+  it('should find using Cosine distance and do text_embedding generation', async () => {
+    await Book.destroy({ where: {} });
+
+    await sequelize.query('DROP INDEX book_index');
+
+    await sequelize.query(`
+      CREATE INDEX book_index ON books USING hnsw(embedding dist_l2sq_ops)
+      WITH (M=2, ef_construction=10, ef=4, dim=768);
+    `);
+
+    const array768dim = new Array(768).fill(1);
+    const newBooks = [
+      { embedding: array768dim, name: 'Harry Potter', url: imageUrl },
+      { embedding: array768dim, name: 'Greek Myths', url: imageUrl },
+    ];
+
+    await Book.bulkCreate(newBooks);
+
+    const bookEmbeddingsOrderd = await Book.findAll({
+      order: [[sequelize.cosineDistance('embedding', sequelize.textEmbedding(BAAI_BGE_BASE_EN, 'name')), 'asc']],
+      where: { name: { [Op.not]: null } },
+      limit: 2,
+      raw: true,
+    });
+
+    assert.equal(bookEmbeddingsOrderd.length, 2);
+  });
+
+  it('should find using L2 distance and do image_embedding generation', async () => {
+    await Book.destroy({ where: {} });
+
+    await sequelize.query('DROP INDEX book_index');
+
+    await sequelize.query(`
+      CREATE INDEX book_index ON books USING hnsw(embedding dist_l2sq_ops)
+      WITH (M=2, ef_construction=10, ef=4, dim=512);
+    `);
+
+    const array512dim = new Array(512).fill(1);
+    const newBooks = [
+      { embedding: array512dim, name: 'Harry Potter', url: imageUrl },
+      { embedding: array512dim, name: 'Greek Myths', url: imageUrl },
+    ];
+
+    await Book.bulkCreate(newBooks);
+
+    const bookEmbeddingsOrderd = await Book.findAll({
+      order: [[sequelize.l2Distance('embedding', sequelize.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'url')), 'desc']],
+      where: { url: { [Op.not]: null } },
+      limit: 2,
+      raw: true,
+    });
+
+    assert.equal(bookEmbeddingsOrderd.length, 2);
+    assert.equal(bookEmbeddingsOrderd[0].name, 'Harry Potter');
+    assert.equal(bookEmbeddingsOrderd[1].name, 'Greek Myths');
   });
 });
