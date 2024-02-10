@@ -7,8 +7,8 @@
 If you've already executed this through a raw query, then skip this step.
 
 ```js
-import Knex from 'knex';
 import lantern from 'lantern/sequelize';
+import { Sequelize } from 'sequelize';
 
 const sequelize = Sequelize();
 
