@@ -1,3 +1,5 @@
-export function l2(column: any, value: any, sequelize: any): any;
-export function cosine(column: any, value: any, sequelize: any): any;
-export function hamming(column: any, value: any, sequelize: any): any;
+import { fromSql, toSql } from '../_common/utils/sql';
+
+function extend(sequelize: any): void;
+
+export { fromSql, toSql, extend };

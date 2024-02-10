@@ -22,6 +22,7 @@ module.exports = {
     'no-param-reassign': 'off',
     'no-plusplus': 'off',
     'default-case': 'off',
+    'import/extensions': 'off',
     'no-underscore-dangle': 'off',
     'brace-style': 'off',
     'import/no-unresolved': 'off',

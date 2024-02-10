@@ -1,11 +1,10 @@
 import assert from 'node:assert';
 import lantern from 'lantern/sequelize';
-
 import { describe, it, after } from 'node:test';
 import { Sequelize, DataTypes, Op } from 'sequelize';
 import { TextEmbeddingModels, ImageEmbeddingModels } from 'lantern/embeddings';
 
-const imageUrl = process.env.TEST_IMAGE_EMBEDDING_EXAMPLE_URL;
+import { imageUrl, newBooks, newMovies, newBooks768Dim, newBooks512Dim } from './fixtures/fixtures.mjs';
 
 const { BAAI_BGE_BASE_EN } = TextEmbeddingModels;
 const { CLIP_VIT_B_32_VISUAL } = ImageEmbeddingModels;
@@ -66,23 +65,6 @@ describe('Sequelize', () => {
 
     await Book.sync({ force: true });
 
-    const newBooks = [
-      {
-        embedding: [1, 1, 1],
-        name: 'Harry Potter',
-        url: imageUrl,
-      },
-      {
-        embedding: [2, 2, 2],
-        name: 'Greek Myths',
-        url: imageUrl,
-      },
-      {
-        embedding: [1, 1, 2],
-      },
-      { embedding: null },
-    ];
-
     await Book.bulkCreate(newBooks);
 
     await sequelize.query(`
@@ -108,19 +90,6 @@ describe('Sequelize', () => {
     );
 
     await Movie.sync({ force: true });
-
-    const newMovies = [
-      {
-        embedding: [1, 1, 1],
-      },
-      {
-        embedding: [2, 2, 2],
-      },
-      {
-        embedding: [1, 1, 2],
-      },
-      { embedding: null },
-    ];
 
     await Movie.bulkCreate(newMovies);
 
@@ -229,13 +198,7 @@ describe('Sequelize', () => {
       WITH (M=2, ef_construction=10, ef=4, dim=768);
     `);
 
-    const array768dim = new Array(768).fill(1);
-    const newBooks = [
-      { embedding: array768dim, name: 'Harry Potter', url: imageUrl },
-      { embedding: array768dim, name: 'Greek Myths', url: imageUrl },
-    ];
-
-    await Book.bulkCreate(newBooks);
+    await Book.bulkCreate(newBooks768Dim);
 
     const bookEmbeddingsOrderd = await Book.findAll({
       order: [[sequelize.cosineDistance('embedding', sequelize.textEmbedding(BAAI_BGE_BASE_EN, 'name')), 'asc']],
@@ -257,13 +220,7 @@ describe('Sequelize', () => {
       WITH (M=2, ef_construction=10, ef=4, dim=512);
     `);
 
-    const array512dim = new Array(512).fill(1);
-    const newBooks = [
-      { embedding: array512dim, name: 'Harry Potter', url: imageUrl },
-      { embedding: array512dim, name: 'Greek Myths', url: imageUrl },
-    ];
-
-    await Book.bulkCreate(newBooks);
+    await Book.bulkCreate(newBooks512Dim);
 
     const bookEmbeddingsOrderd = await Book.findAll({
       order: [[sequelize.l2Distance('embedding', sequelize.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'url')), 'desc']],
