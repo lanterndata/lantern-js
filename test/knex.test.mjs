@@ -1,12 +1,10 @@
-import Knex from 'knex';
 import 'lantern/knex';
-
+import Knex from 'knex';
 import assert from 'node:assert';
+import { describe, it, after } from 'node:test';
 import { TextEmbeddingModels, ImageEmbeddingModels } from 'lantern/embeddings';
 
-import { describe, it, after } from 'node:test';
-
-const imageUrl = process.env.TEST_IMAGE_EMBEDDING_EXAMPLE_URL;
+import { imageUrl, newBooks, newMovies, newBooks768Dim, newBooks512Dim } from './fixtures/fixtures.mjs';
 
 const { BAAI_BGE_BASE_EN } = TextEmbeddingModels;
 const { CLIP_VIT_B_32_VISUAL } = ImageEmbeddingModels;
@@ -50,23 +48,6 @@ describe('Knex', () => {
       table.specificType('embedding', 'REAL[]');
     });
 
-    const newBooks = [
-      {
-        embedding: [1, 1, 1],
-        name: 'Harry Potter',
-        url: imageUrl,
-      },
-      {
-        embedding: [2, 2, 2],
-        name: 'Greek Myths',
-        url: imageUrl,
-      },
-      {
-        embedding: [1, 1, 2],
-      },
-      { embedding: null },
-    ];
-
     await knex('books').insert(newBooks);
 
     await knex.raw(`
@@ -79,19 +60,6 @@ describe('Knex', () => {
       table.increments('id');
       table.specificType('embedding', 'INT[]');
     });
-
-    const newMovies = [
-      {
-        embedding: [1, 1, 1],
-      },
-      {
-        embedding: [2, 2, 2],
-      },
-      {
-        embedding: [1, 1, 2],
-      },
-      { embedding: null },
-    ];
 
     await knex('movies').insert(newMovies);
 
@@ -185,13 +153,7 @@ describe('Knex', () => {
 
     await knex.raw('DROP INDEX book_index');
 
-    const array768dim = new Array(768).fill(1);
-    const newBooks = [
-      { embedding: array768dim, name: 'Harry Potter', url: imageUrl },
-      { embedding: array768dim, name: 'Greek Myths', url: imageUrl },
-    ];
-
-    await knex('books').insert(newBooks);
+    await knex('books').insert(newBooks768Dim);
 
     await knex.raw(`
       CREATE INDEX book_index ON books USING hnsw(embedding dist_l2sq_ops)
@@ -216,13 +178,7 @@ describe('Knex', () => {
       WITH (M=2, ef_construction=10, ef=4, dim=512);
     `);
 
-    const array512dim = new Array(512).fill(1);
-    const newBooks = [
-      { embedding: array512dim, name: 'Harry Potter', url: imageUrl },
-      { embedding: array512dim, name: 'Greek Myths', url: imageUrl },
-    ];
-
-    await knex('books').insert(newBooks);
+    await knex('books').insert(newBooks512Dim);
 
     const bookEmbeddingsOrderd = await knex('books')
       .whereNotNull('url')
