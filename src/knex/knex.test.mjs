@@ -1,6 +1,7 @@
 import Knex from 'knex';
+import 'lantern/knex';
+
 import assert from 'node:assert';
-import lantern from 'lantern/knex';
 import { TextEmbeddingModels, ImageEmbeddingModels } from 'lantern/embeddings';
 
 import { describe, it, after } from 'node:test';
@@ -51,17 +52,17 @@ describe('Knex', () => {
 
     const newBooks = [
       {
-        embedding: lantern.toSql([1, 1, 1]),
+        embedding: [1, 1, 1],
         name: 'Harry Potter',
         url: imageUrl,
       },
       {
-        embedding: lantern.toSql([2, 2, 2]),
+        embedding: [2, 2, 2],
         name: 'Greek Myths',
         url: imageUrl,
       },
       {
-        embedding: lantern.toSql([1, 1, 2]),
+        embedding: [1, 1, 2],
       },
       { embedding: null },
     ];
@@ -81,13 +82,13 @@ describe('Knex', () => {
 
     const newMovies = [
       {
-        embedding: lantern.toSql([1, 1, 1]),
+        embedding: [1, 1, 1],
       },
       {
-        embedding: lantern.toSql([2, 2, 2]),
+        embedding: [2, 2, 2],
       },
       {
-        embedding: lantern.toSql([1, 1, 2]),
+        embedding: [1, 1, 2],
       },
       { embedding: null },
     ];
@@ -186,8 +187,8 @@ describe('Knex', () => {
 
     const array768dim = new Array(768).fill(1);
     const newBooks = [
-      { embedding: lantern.toSql(array768dim), name: 'Harry Potter', url: imageUrl },
-      { embedding: lantern.toSql(array768dim), name: 'Greek Myths', url: imageUrl },
+      { embedding: array768dim, name: 'Harry Potter', url: imageUrl },
+      { embedding: array768dim, name: 'Greek Myths', url: imageUrl },
     ];
 
     await knex('books').insert(newBooks);
@@ -217,8 +218,8 @@ describe('Knex', () => {
 
     const array512dim = new Array(512).fill(1);
     const newBooks = [
-      { embedding: lantern.toSql(array512dim), name: 'Harry Potter', url: imageUrl },
-      { embedding: lantern.toSql(array512dim), name: 'Greek Myths', url: imageUrl },
+      { embedding: array512dim, name: 'Harry Potter', url: imageUrl },
+      { embedding: array512dim, name: 'Greek Myths', url: imageUrl },
     ];
 
     await knex('books').insert(newBooks);

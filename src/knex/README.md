@@ -4,23 +4,18 @@
 
 ## Setting up LanternDB Extension
 
-Everything begins by creating the LanternDB extension in the PostgreSQL database.
-
 If you've already executed this through a raw query, then skip this step.
 
 ```js
 import Knex from 'knex';
-import lantern from 'lantern/knex';
+import 'lantern/knex';
 
-const knex = Knex({
-  client: 'pg',
-  connection: process.env.DATABASE_URL,
-});
+const knex = Knex();
 
-await knex.schema.addExtension('lantern');
+await knex.schema.createLanternExtension();
 
-// Fro Lantern Extras you shoul also do
-await knex.schema.addExtension('lantern_extras');
+// For the LanternExtras, you need to run this instead
+await knex.schema.createLanternExtrasExtension();
 ```
 
 ## Create the Table and add an Index
@@ -28,6 +23,8 @@ await knex.schema.addExtension('lantern_extras');
 ```js
 await knex.schema.createTable('books', (table) => {
   table.increments('id');
+  table.specificType('url', 'TEXT');
+  table.specificType('name', 'TEXT');
   table.specificType('embedding', 'REAL[]');
 
   knex.raw(`
@@ -39,19 +36,19 @@ await knex.schema.createTable('books', (table) => {
 
 ## Vector Searches
 
-You can performe vectore search using those distance algorithms.
+You can performe vectore search using those distance methods.
 
 ```js
 await knex('books')
-  .orderBy(knex.l2('embedding', [1, 1, 1]))
+  .orderBy(knex.l2Distance('embedding', [1, 1, 1]))
   .limit(5);
 
 await knex('books')
-  .orderBy(knex.cosine('embedding', [1, 1, 1]))
+  .orderBy(knex.cosineDistance('embedding', [1, 1, 1]))
   .limit(5);
 
 await knex('books')
-  .orderBy(knex.cosine('embedding', [1, 1, 1]))
+  .orderBy(knex.hammingDistance('embedding', [1, 1, 1]))
   .limit(5);
 ```
 
@@ -61,15 +58,17 @@ await knex('books')
 
 ```js
 import Knex from 'knex';
-import lantern from 'lantern/knex';
+import 'lantern/knex';
 import { TextEmbeddingModels, ImageEmbeddingModels } from 'lantern/embeddings';
 
 // text embedding
-const embedding = await knex.generateTextEmbedding(TextEmbeddingModels.BAAI_BGE_BASE_EN, 'hello world');
+const text = 'hello world';
+const embedding = await knex.generateTextEmbedding(TextEmbeddingModels.BAAI_BGE_BASE_EN, text);
 console.log(embedding.rows[0].text_embedding);
 
 // image embedding
-const embedding = await knex.generateImageEmbedding(ImageEmbeddingModels.CLIP_VIT_B_32_VISUAL, 'https://lantern.dev/images/home/footer.png');
+const imageUrl = 'https://lantern.dev/images/home/footer.png';
+const embedding = await knex.generateImageEmbedding(ImageEmbeddingModels.CLIP_VIT_B_32_VISUAL, imageUrl);
 console.log(embedding.rows[0].image_embedding);
 ```
 
@@ -77,17 +76,25 @@ console.log(embedding.rows[0].image_embedding);
 
 ```js
 import Knex from 'knex';
-import lantern from 'lantern/knex';
+import 'lantern/knex';
 import { TextEmbeddingModels, ImageEmbeddingModels } from 'lantern/embeddings';
 
 // text embeddings
-const bookTextEmbeddings = await knex('books').select('name').select(knex.textEmbedding(TextEmbeddingModels.BAAI_BGE_BASE_EN, 'name')).whereNotNull('name');
+const selectLiteral = knex.textEmbedding(TextEmbeddingModels.BAAI_BGE_BASE_EN, 'name');
+const bookTextEmbeddings = await knex('books')
+    .select('name')
+    .select(selectLiteral)
+    .whereNotNull('name');
 
 // [{ name: "...", text_embedding: [...] }]
 console.log(bookTextEmbeddings);
 
 // image embeddings
-const bookImageEmbeddings = await knex('books').select('url').select(knex.imageEmbedding(ImageEmbeddingModels.BAAI_BGE_BASE_EN, 'url')).whereNotNull('url');
+const selectLiteral = knex.imageEmbedding(ImageEmbeddingModels.BAAI_BGE_BASE_EN, 'url');
+const bookImageEmbeddings = await knex('books')
+    .select('url')
+    .select(selectLiteral)
+    .whereNotNull('url');
 
 // [{ url: "...", text_embedding: [...] }]
 console.log(bookImageEmbeddings);
@@ -98,12 +105,21 @@ console.log(bookImageEmbeddings);
 ```js
 const bookEmbeddingsOrderd = await knex('books')
   .whereNotNull('url')
-  .orderBy(knex.l2('embedding', knex.imageEmbedding(ImageEmbeddingModels.CLIP_VIT_B_32_VISUAL, 'url')), 'desc')
+  .orderBy(
+    knex.l2Distance(
+      'embedding',
+      knex.imageEmbedding(ImageEmbeddingModels.CLIP_VIT_B_32_VISUAL, 'url')
+    ),
+    'desc'
+  )
   .limit(2);
 ```
 
 Corresponding SQL code:
 
 ```sql
-SELECT * FROM "books" WHERE "url" IS NOT NULL ORDER BY "embedding" <-> image_embedding('clip/ViT-B-32-visual', "url") DESC LIMIT 2;
+SELECT * FROM "books"
+WHERE "url" IS NOT NULL
+ORDER BY "embedding" <-> image_embedding('clip/ViT-B-32-visual', "url") DESC
+LIMIT 2;
 ```
