@@ -7,8 +7,8 @@
     "test": "node test/test.mjs",
     "lint": "eslint ./",
     "lint:fix": "eslint ./ --fix",
-    "prettier:format": "prettier . --write",
-    "prettier:check": "prettier . --check",
+    "prettier:format": "prettier --write '**/*.{js,mjs,ts}'",
+    "prettier:check": "prettier --check '**/*.{js,mjs,ts}'",
     "format": "npm run lint:fix && npm run prettier:format"
   },
   "repository": {
