@@ -34,7 +34,6 @@ function getTextEmbeddingModelName(modelKey) {
 }
 
 function getImageEmbeddingModelName(modelKey) {
-  console.log(11111111, modelKey);
   if (!ImageEmbeddingModelsValue[modelKey]) {
     throw new Error('Invalid image embedding model');
   }
