@@ -1,4 +1,5 @@
 const { fromSql, toSql } = require('../_common/utils/sql');
+const { getTextEmbeddingModelName, getImageEmbeddingModelName } = require('../_embeddings/models');
 
 function embedding(methodName, modelName, column, sequelize) {
   const quotedColumn = sequelize.dialect.queryGenerator.quoteIdentifier(column);
@@ -22,21 +23,33 @@ function extend(sequelize) {
   };
 
   // embedding generation methods
-  sequelize.generateTextEmbedding = function (modelName, value) {
-    return sequelize.query(`SELECT text_embedding('${modelName}', '${value}')`);
+  sequelize.generateTextEmbedding = function (modelKey, value) {
+    const modelName = getTextEmbeddingModelName(modelKey);
+    return sequelize.query(`SELECT text_embedding('${modelName}', :value)`, {
+      replacements: {
+        value,
+      },
+    });
   };
 
-  sequelize.generateImageEmbedding = function (modelName, value) {
-    return sequelize.query(`SELECT image_embedding('${modelName}', '${value}')`);
+  sequelize.generateImageEmbedding = function (modelKey, value) {
+    const modelName = getImageEmbeddingModelName(modelKey);
+    return sequelize.query(`SELECT image_embedding('${modelName}', :value)`, {
+      replacements: {
+        value,
+      },
+    });
   };
 
   // embedding literals
-  sequelize.textEmbedding = function (column, value) {
-    return embedding('text_embedding', column, value, this);
+  sequelize.textEmbedding = function (modelKey, column) {
+    const modelName = getTextEmbeddingModelName(modelKey);
+    return embedding('text_embedding', modelName, column, this);
   };
 
-  sequelize.imageEmbedding = function (column, value) {
-    return embedding('image_embedding', column, value, this);
+  sequelize.imageEmbedding = function (modelKey, column) {
+    const modelName = getImageEmbeddingModelName(modelKey);
+    return embedding('image_embedding', modelName, column, this);
   };
 
   // distance search literals

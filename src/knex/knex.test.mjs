@@ -144,7 +144,6 @@ describe('Knex', () => {
 
   it('should create simple text embedding', async () => {
     const result = await knex.generateTextEmbedding(BAAI_BGE_BASE_EN, 'hello world');
-
     assert.equal(result.rows[0].text_embedding.length, 768);
   });
 
@@ -155,7 +154,8 @@ describe('Knex', () => {
   });
 
   it('select text embedding based on book names in the table', async () => {
-    const bookEmbeddings = await knex('books').select('name').select(knex.textEmbedding(BAAI_BGE_BASE_EN, 'name')).whereNotNull('name');
+    const selectLiteral = knex.textEmbedding(BAAI_BGE_BASE_EN, 'name');
+    const bookEmbeddings = await knex('books').select('name').select(selectLiteral).whereNotNull('name');
 
     assert.equal(bookEmbeddings.length, 2);
 
@@ -166,8 +166,9 @@ describe('Knex', () => {
     });
   });
 
-  it('select text embedding based on book urls in the table', async () => {
-    const bookEmbeddings = await knex('books').select('url').select(knex.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'url')).whereNotNull('url');
+  it('select image embedding based on book urls in the table', async () => {
+    const selectLiteral = knex.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'url');
+    const bookEmbeddings = await knex('books').select('url').select(selectLiteral).whereNotNull('url');
 
     assert.equal(bookEmbeddings.length, 2);
 
@@ -176,6 +177,32 @@ describe('Knex', () => {
       assert(Array.isArray(book.image_embedding));
       assert(book.image_embedding.length > 0);
     });
+  });
+
+  it('should find using Cosine distance and do text_embedding generation', async () => {
+    await knex('books').delete();
+
+    await knex.raw('DROP INDEX book_index');
+
+    const array768dim = new Array(768).fill(1);
+    const newBooks = [
+      { embedding: lantern.toSql(array768dim), name: 'Harry Potter', url: imageUrl },
+      { embedding: lantern.toSql(array768dim), name: 'Greek Myths', url: imageUrl },
+    ];
+
+    await knex('books').insert(newBooks);
+
+    await knex.raw(`
+      CREATE INDEX book_index ON books USING hnsw(embedding dist_l2sq_ops)
+      WITH (M=2, ef_construction=10, ef=4, dim=768);
+    `);
+
+    const bookEmbeddingsOrderd = await knex('books')
+      .whereNotNull('name')
+      .orderBy(knex.l2Distance('embedding', knex.textEmbedding(BAAI_BGE_BASE_EN, 'name')), 'asc')
+      .limit(2);
+
+    assert.equal(bookEmbeddingsOrderd.length, 2);
   });
 
   it('should find using L2 distance and do image_embedding generation', async () => {
@@ -202,67 +229,7 @@ describe('Knex', () => {
       .limit(2);
 
     assert.equal(bookEmbeddingsOrderd.length, 2);
-  });
-
-  it('should find using Cosine distance and do text_embedding generation', async () => {
-    await knex('books').delete();
-
-    await knex.raw('DROP INDEX book_index');
-
-    const array768dim = new Array(768).fill(1);
-    const newBooks = [
-      { embedding: lantern.toSql(array768dim), name: 'Harry Potter', url: imageUrl },
-      { embedding: lantern.toSql(array768dim), name: 'Greek Myths', url: imageUrl },
-    ];
-
-    await knex('books').insert(newBooks);
-
-    await knex.raw(`
-      CREATE INDEX book_index ON books USING hnsw(embedding dist_l2sq_ops)
-      WITH (M=2, ef_construction=10, ef=4, dim=768);
-    `);
-
-    const bookEmbeddingsOrderd = await knex('books')
-      .whereNotNull('name')
-      .orderBy(knex.l2Distance('embedding', knex.textEmbedding(BAAI_BGE_BASE_EN, 'name')), 'desc')
-      .limit(2);
-
-    assert.equal(bookEmbeddingsOrderd.length, 2);
-  });
-
-  it('should create simple text embedding', async () => {
-    const embedding = await knex.generateTextEmbedding(BAAI_BGE_BASE_EN, 'hello world');
-    assert.equal(embedding.rows[0].text_embedding.length, 768);
-  });
-
-  it('should create simple image embedding', async () => {
-    const embedding = await knex.generateImageEmbedding(CLIP_VIT_B_32_VISUAL, imageUrl);
-    assert.equal(embedding.rows[0].image_embedding.length, 512);
-  });
-
-  it('select text embedding based on book names in the table', async () => {
-    const selectLiteral = knex.textEmbedding(BAAI_BGE_BASE_EN, 'name');
-    const bookEmbeddings = await knex('books').select('name').select(selectLiteral).whereNotNull('name');
-
-    assert.equal(bookEmbeddings.length, 2);
-
-    bookEmbeddings.forEach((book) => {
-      assert(book.name);
-      assert(Array.isArray(book.text_embedding));
-      assert(book.text_embedding.length > 0);
-    });
-  });
-
-  it('select text embedding based on book urls in the table', async () => {
-    const selectLiteral = knex.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'url');
-    const bookEmbeddings = await knex('books').select('url').select(selectLiteral).whereNotNull('url');
-
-    assert.equal(bookEmbeddings.length, 2);
-
-    bookEmbeddings.forEach((book) => {
-      assert(book.url);
-      assert(Array.isArray(book.image_embedding));
-      assert(book.image_embedding.length > 0);
-    });
+    assert.equal(bookEmbeddingsOrderd[0].name, 'Harry Potter');
+    assert.equal(bookEmbeddingsOrderd[1].name, 'Greek Myths');
   });
 });
