@@ -1,4 +1,4 @@
-# lanterndata
+# lantern-js
 
 [lantern](https://github.com/lanterndata/lantern) support JavaScript/Typescript ORMs.
 
