@@ -1,8 +1,8 @@
-import 'lantern/knex';
+import 'lantern-js/knex';
 import Knex from 'knex';
 import assert from 'node:assert';
 import { describe, it, after } from 'node:test';
-import { TextEmbeddingModels, ImageEmbeddingModels } from 'lantern/embeddings';
+import { TextEmbeddingModels, ImageEmbeddingModels } from 'lantern-js/embeddings';
 
 import { imageUrl, newBooks, newMovies, newBooks768Dim, newBooks512Dim } from './fixtures/fixtures.mjs';
 

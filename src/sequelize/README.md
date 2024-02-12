@@ -1,4 +1,4 @@
-# lantern/sequelize
+# lantern-js/sequelize
 
 ---
 
@@ -7,7 +7,7 @@
 If you've already executed this through a raw query, then skip this step.
 
 ```js
-import lantern from 'lantern/sequelize';
+import lantern from 'lantern-js/sequelize';
 import { Sequelize } from 'sequelize';
 
 const sequelize = Sequelize();
@@ -66,7 +66,7 @@ await Book.findAll({
 ### Static generation
 
 ```js
-import { TextEmbeddingModels, ImageEmbeddingModels } from 'lantern/embeddings';
+import { TextEmbeddingModels, ImageEmbeddingModels } from 'lantern-js/embeddings';
 
 // text embedding
 const text = 'hello world';
@@ -82,7 +82,7 @@ console.log(result[0].image_embedding);
 ### Dynamic generation
 
 ```js
-import { TextEmbeddingModels, ImageEmbeddingModels } from 'lantern/embeddings';
+import { TextEmbeddingModels, ImageEmbeddingModels } from 'lantern-js/embeddings';
 
 // text embeddings
 const bookTextEmbeddings = await Book.findAll({
@@ -110,7 +110,7 @@ console.log(bookImageEmbeddings);
 ## Vector Searches with embedding generation
 
 ```js
-import { TextEmbeddingModels, ImageEmbeddingModels } from 'lantern/embeddings';
+import { TextEmbeddingModels, ImageEmbeddingModels } from 'lantern-js/embeddings';
 
 const bookEmbeddingsOrderd = await Book.findAll({
   order: [[sequelize.l2Distance('embedding', sequelize.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'url')), 'desc']],

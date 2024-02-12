@@ -1,4 +1,4 @@
-# lantern/knex
+# lantern-js/knex
 
 ---
 
@@ -8,7 +8,7 @@ If you've already executed this through a raw query, then skip this step.
 
 ```js
 import Knex from 'knex';
-import 'lantern/knex';
+import 'lantern-js/knex';
 
 const knex = Knex();
 
@@ -58,8 +58,8 @@ await knex('books')
 
 ```js
 import Knex from 'knex';
-import 'lantern/knex';
-import { TextEmbeddingModels, ImageEmbeddingModels } from 'lantern/embeddings';
+import 'lantern-js/knex';
+import { TextEmbeddingModels, ImageEmbeddingModels } from 'lantern-js/embeddings';
 
 // text embedding
 const text = 'hello world';
@@ -76,8 +76,8 @@ console.log(embedding.rows[0].image_embedding);
 
 ```js
 import Knex from 'knex';
-import 'lantern/knex';
-import { TextEmbeddingModels, ImageEmbeddingModels } from 'lantern/embeddings';
+import 'lantern-js/knex';
+import { TextEmbeddingModels, ImageEmbeddingModels } from 'lantern-js/embeddings';
 
 // text embeddings
 const selectLiteral = knex.textEmbedding(TextEmbeddingModels.BAAI_BGE_BASE_EN, 'name');
