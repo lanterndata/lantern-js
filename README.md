@@ -7,7 +7,7 @@
 Run:
 
 ```sh
-npm install lantern
+npm install lantern-js
 ```
 
 Observe the guidelines for your ORM database library.
