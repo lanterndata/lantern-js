@@ -116,7 +116,6 @@ const bookEmbeddingsOrderd = await Book.findAll({
   order: [[sequelize.l2Distance('embedding', sequelize.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'url')), 'desc']],
   where: { url: { [Op.not]: null } },
   limit: 2,
-  raw: true,
 });
 ```
 
