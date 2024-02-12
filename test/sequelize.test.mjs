@@ -204,7 +204,6 @@ describe('Sequelize', () => {
       order: [[sequelize.cosineDistance('embedding', sequelize.textEmbedding(BAAI_BGE_BASE_EN, 'name')), 'asc']],
       where: { name: { [Op.not]: null } },
       limit: 2,
-      raw: true,
     });
 
     assert.equal(bookEmbeddingsOrderd.length, 2);
@@ -226,7 +225,6 @@ describe('Sequelize', () => {
       order: [[sequelize.l2Distance('embedding', sequelize.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'url')), 'desc']],
       where: { url: { [Op.not]: null } },
       limit: 2,
-      raw: true,
     });
 
     assert.equal(bookEmbeddingsOrderd.length, 2);
