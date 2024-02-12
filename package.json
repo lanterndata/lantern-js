@@ -1,5 +1,5 @@
 {
-  "name": "lantern",
+  "name": "lantern-js",
   "version": "1.0.0",
   "description": "JavaScript/Typescript ORMs for Lantern Vector Database",
   "main": "index.js",
@@ -27,43 +27,36 @@
   "license": "BSL",
   "exports": {
     ".": {
-      "types": "./src/index.d.ts",
+      "types": "./types/index.d.ts",
       "default": "./src/index.js"
     },
     "./knex": {
-      "types": "./src/knex/knex.d.ts",
+      "types": "./types/knex/knex.d.ts",
       "default": "./src/knex/knex.js"
     },
     "./sequelize": {
-      "types": "./src/sequelize/sequelize.d.ts",
+      "types": "./types/sequelize/sequelize.d.ts",
       "default": "./src/sequelize/sequelize.js"
     },
     "./embeddings": {
-      "types": "./src/_embeddings/embeddings.d.ts",
+      "types": "./types/_embeddings/embeddings.d.ts",
       "default": "./src/_embeddings/embeddings.js"
-    },
-    "./sql": {
-      "types": "./src/_common/utils/sql.d.ts",
-      "default": "./src/_common/utils/sql.js"
     },
     "./package.json": "./package.json"
   },
   "typesVersions": {
     "*": {
       "*": [
-        "src/index.d.ts"
+        "types/index.d.ts"
       ],
       "knex": [
-        "src/sequelize/knex.d.ts"
+        "types/sequelize/knex.d.ts"
       ],
       "sequelize": [
-        "src/sequelize/sequelize.d.ts"
+        "types/sequelize/sequelize.d.ts"
       ],
       "embeddings": [
-        "src/_embeddings/embeddings.d.ts"
-      ],
-      "sql": [
-        "src/_common/utils/sql.d.ts"
+        "types/_embeddings/embeddings.d.ts"
       ]
     }
   },
