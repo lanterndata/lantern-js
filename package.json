@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/lanterndata/lantern-node"
+    "url": "git+https://github.com/lanterndata/lantern-js.git"
   },
   "keywords": [
     "lantern",
@@ -69,5 +69,12 @@
     "pg": "^8.11.3",
     "prettier": "3.2.5",
     "sequelize": "^6.36.0"
+  },
+  "bugs": {
+    "url": "https://github.com/lanterndata/lantern-js/issues"
+  },
+  "homepage": "https://github.com/lanterndata/lantern-js#readme",
+  "directories": {
+    "test": "test"
   }
 }
