@@ -1,4 +1,4 @@
-# lantern-js
+# lanterndata
 
 [lantern](https://github.com/lanterndata/lantern) support JavaScript/Typescript ORMs.
 
@@ -7,7 +7,7 @@
 Run:
 
 ```sh
-npm install lantern-js
+npm install lanterndata
 ```
 
 Observe the guidelines for your ORM database library.
