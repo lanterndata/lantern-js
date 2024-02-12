@@ -1,8 +1,8 @@
 import assert from 'node:assert';
-import lantern from 'lantern-js/sequelize';
+import lantern from 'lanterndata/sequelize';
 import { describe, it, after } from 'node:test';
 import { Sequelize, DataTypes, Op } from 'sequelize';
-import { TextEmbeddingModels, ImageEmbeddingModels } from 'lantern-js/embeddings';
+import { TextEmbeddingModels, ImageEmbeddingModels } from 'lanterndata/embeddings';
 
 import { imageUrl, newBooks, newMovies, newBooks768Dim, newBooks512Dim } from './fixtures/fixtures.mjs';
 
