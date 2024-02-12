@@ -1,6 +1,6 @@
 {
   "name": "lanterndata",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "JavaScript/Typescript ORMs for Lantern Vector Database",
   "main": "index.js",
   "scripts": {
@@ -31,15 +31,15 @@
       "default": "./src/index.js"
     },
     "./knex": {
-      "types": "./types/knex/knex.d.ts",
+      "types": "./types/knex/index.d.ts",
       "default": "./src/knex/knex.js"
     },
     "./sequelize": {
-      "types": "./types/sequelize/sequelize.d.ts",
+      "types": "./types/sequelize/index.d.ts",
       "default": "./src/sequelize/sequelize.js"
     },
     "./embeddings": {
-      "types": "./types/_embeddings/embeddings.d.ts",
+      "types": "./types/_embeddings/index.d.ts",
       "default": "./src/_embeddings/embeddings.js"
     },
     "./package.json": "./package.json"
@@ -50,13 +50,13 @@
         "types/index.d.ts"
       ],
       "knex": [
-        "types/sequelize/knex.d.ts"
+        "types/sequelize/index.d.ts"
       ],
       "sequelize": [
-        "types/sequelize/sequelize.d.ts"
+        "types/sequelize/index.d.ts"
       ],
       "embeddings": [
-        "types/_embeddings/embeddings.d.ts"
+        "types/_embeddings/index.d.ts"
       ]
     }
   },
