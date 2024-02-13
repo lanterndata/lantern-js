@@ -1,6 +1,6 @@
 {
   "name": "lanterndata",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "JavaScript/Typescript ORMs for Lantern Vector Database",
   "main": "index.js",
   "scripts": {
@@ -50,7 +50,7 @@
         "types/index.d.ts"
       ],
       "knex": [
-        "types/sequelize/index.d.ts"
+        "types/knex/index.d.ts"
       ],
       "sequelize": [
         "types/sequelize/index.d.ts"
