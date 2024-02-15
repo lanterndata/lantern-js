@@ -1,100 +1,79 @@
 import postgres from 'postgres';
 import assert from 'node:assert';
 
+import { sql } from 'drizzle-orm';
 import { describe, it, after } from 'node:test';
 import { drizzle } from 'drizzle-orm/postgres-js';
-import { createLanternExtension } from 'lanterndata/drizzle-orm';
+import { pgTable, serial, text, real, integer } from "drizzle-orm/pg-core";
+import { createLanternExtension, createLanternExtrasExtension } from 'lanterndata/drizzle-orm';
 import { TextEmbeddingModels, ImageEmbeddingModels } from 'lanterndata/embeddings';
 
-// import { imageUrl, newBooks, newMovies, newBooks768Dim, newBooks512Dim } from './fixtures/fixtures.mjs';
+import { imageUrl, newBooks, newMovies, newBooks768Dim, newBooks512Dim } from './fixtures/fixtures.mjs';
 
 const { BAAI_BGE_BASE_EN } = TextEmbeddingModels;
 const { CLIP_VIT_B_32_VISUAL } = ImageEmbeddingModels;
 
-async function dropTables(sequelize) {
-  await sequelize.query('DROP TABLE IF EXISTS books;');
-  await sequelize.query('DROP TABLE IF EXISTS movies;');
+async function dropTables(db) {
+  await db.execute(sql`DROP TABLE IF EXISTS books;`);
+  await db.execute(sql`DROP TABLE IF EXISTS movies;`);
 }
 
 describe('Drizzle-orm', () => {
-  
-  // let sequelize;
-  // let Book;
-  // let Movie;
+  let db, client;
+  let Book, Movies;
 
-  // const logging = process.env.TEST_DEBUG ? console.log : null;
-
-  // after(async () => {
-  //   await dropTables(sequelize);
-  //   await sequelize.close();
-  // });
-
-  it('should create the lantern extension ', async () => {
-    const client = await postgres(process.env.DATABASE_URL);
-    const db = drizzle(client, { logger: !!process.env.TEST_DEBUG });
-
-
-    await db.execute(createLanternExtension());
+  after(async () => {
+    await dropTables(db);
+    await client.close();
   });
 
-  // it('should create a table [REAL] with index and data', async () => {
-  //   // reconnect after the lantern extension has been created
-  //   sequelize = new Sequelize(process.env.DATABASE_URL, { logging });
+  it('should create the lantern extension ', async () => {
+    client = await postgres(process.env.DATABASE_URL);
+    db = drizzle(client, { logger: !!process.env.TEST_DEBUG });
 
-  //   lantern.extend(sequelize);
+    await db.execute(createLanternExtension());
+    await db.execute(createLanternExtrasExtension());
+  });
 
-  //   Book = sequelize.define(
-  //     'Book',
-  //     {
-  //       id: {
-  //         type: DataTypes.INTEGER,
-  //         autoIncrement: true,
-  //         primaryKey: true,
-  //       },
-  //       embedding: { type: DataTypes.ARRAY(DataTypes.REAL) },
-  //       name: { type: DataTypes.TEXT },
-  //       url: { type: DataTypes.TEXT },
-  //     },
-  //     {
-  //       modelName: 'Book',
-  //       tableName: 'books',
-  //     },
-  //   );
+  it('should create a table [REAL] with index and data', async () => {
+    await client`CREATE TABLE books (
+      id SERIAL PRIMARY KEY,
+      name TEXT,
+      url TEXT,
+      embedding REAL[]
+    )`;
 
-  //   await Book.sync({ force: true });
+    Book = pgTable('books', {
+      id: serial('id').primaryKey(),
+      name: text('name'), 
+      url: text('url'),
+      embedding: real('embedding').array(),
+    });
 
-  //   await Book.bulkCreate(newBooks);
+    await db.insert(Book).values(newBooks);
 
-  //   await sequelize.query(`
-  //     CREATE INDEX book_index ON books USING hnsw(embedding dist_l2sq_ops)
-  //   `);
-  // });
+    await client`CREATE INDEX book_index ON books USING hnsw(embedding dist_l2sq_ops)`;
+  });
 
-  // it('should create a table [INT] with index and data', async () => {
-  //   Movie = sequelize.define(
-  //     'Movie',
-  //     {
-  //       id: {
-  //         type: Sequelize.INTEGER,
-  //         autoIncrement: true,
-  //         primaryKey: true,
-  //       },
-  //       embedding: { type: DataTypes.ARRAY(DataTypes.INTEGER) },
-  //     },
-  //     {
-  //       modelName: 'Movie',
-  //       tableName: 'movies',
-  //     },
-  //   );
+  it('should create a table [INT] with index and data', async () => {
+    await client`CREATE TABLE movies (
+      id SERIAL PRIMARY KEY,
+      name TEXT,
+      url TEXT,
+      embedding INT[]
+    )`;
 
-  //   await Movie.sync({ force: true });
+    Movies = pgTable('movies', {
+      id: serial('id').primaryKey(),
+      name: text('name'), 
+      url: text('url'),
+      embedding: integer('embedding').array(),
+    });
 
-  //   await Movie.bulkCreate(newMovies);
+    await db.insert(Movies).values(newMovies);
 
-  //   await sequelize.query(`
-  //     CREATE INDEX movie_index ON movies USING hnsw(embedding dist_hamming_ops)
-  //   `);
-  // });
+    await client`CREATE INDEX movie_index ON movies USING hnsw(embedding dist_hamming_ops)`;
+  });
 
   // it('should find using L2 distance', async () => {
   //   const books = await Book.findAll({
