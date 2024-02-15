@@ -29,7 +29,7 @@ describe('Knex', () => {
     });
 
     knex.on('query', (queryData) => {
-      if (process.env.TEST_DEBUG) {
+      if (!!process.env.TEST_DEBUG) {
         console.log(queryData);
       }
     });
