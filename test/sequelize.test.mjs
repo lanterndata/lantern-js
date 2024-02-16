@@ -19,7 +19,7 @@ describe('Sequelize', () => {
   let Book;
   let Movie;
 
-  const logging = !!process.env.TEST_DEBUG ? console.log : null;
+  const logging = process.env.TEST_DEBUG ? console.log : null;
 
   after(async () => {
     await dropTables(sequelize);
