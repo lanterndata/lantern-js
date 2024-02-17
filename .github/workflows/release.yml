@@ -1,7 +1,9 @@
-name: Package Release
+name: Release
 on:
-  push:
-    branches: ["main"]
+  workflow_run:
+    workflows: Test
+    branches: main
+    types: completed
 jobs:
   build:
     runs-on: ubuntu-latest
