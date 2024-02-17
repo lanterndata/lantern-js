@@ -1,9 +1,9 @@
 name: Node.js CI
 on:
   push:
-    branches: ["main-dev"]
+    branches: ["staging"]
   pull_request:
-    branches: ["main-dev"]
+    branches: ["staging"]
 
 jobs:
   test-with-lanterndb:
