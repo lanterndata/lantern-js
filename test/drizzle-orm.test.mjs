@@ -25,7 +25,7 @@ describe('Drizzle-orm', () => {
   let Movie;
 
   after(async () => {
-    // await dropTables(db);
+    await dropTables(db);
     await client.close();
   });
 
