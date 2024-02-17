@@ -84,9 +84,12 @@ console.log(result[0].image_embedding);
 ```js
 import { TextEmbeddingModels, ImageEmbeddingModels } from 'lanterndata/embeddings';
 
+const {BAAI_BGE_BASE_EN} = TextEmbeddingModels;
+const {CLIP_VIT_B_32_VISUAL} = ImageEmbeddingModels;
+
 // text embeddings
 const bookTextEmbeddings = await Book.findAll({
-  attributes: ['name', sequelize.textEmbedding(TextEmbeddingModels.BAAI_BGE_BASE_EN, 'name')],
+  attributes: ['name', sequelize.textEmbedding(BAAI_BGE_BASE_EN, 'name')],
   where: { name: { [Op.not]: null } },
   limit: 5,
   raw: true,
@@ -110,7 +113,9 @@ console.log(bookImageEmbeddings);
 ## Vector Searches with embedding generation
 
 ```js
-import { TextEmbeddingModels, ImageEmbeddingModels } from 'lanterndata/embeddings';
+import { ImageEmbeddingModels } from 'lanterndata/embeddings';
+
+const {CLIP_VIT_B_32_VISUAL} = ImageEmbeddingModels;
 
 const bookEmbeddingsOrderd = await Book.findAll({
   order: [[sequelize.l2Distance('embedding', sequelize.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'url')), 'desc']],

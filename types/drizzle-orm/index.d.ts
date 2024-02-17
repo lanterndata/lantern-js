@@ -1,17 +1,17 @@
-import { SQLWrapper, Column } from 'drizzle-orm';
-import { TextEmbeddingModels, ImageEmbeddingModels } from '../_embeddings';
+import { SQLWrapper, PgColumn, Column } from 'drizzle-orm';
+import { TextEmbeddingModelType, ImageEmbeddingModelType } from '../_embeddings/model-types';
 
 export * from '../_common/utils/sql';
 
 export function createLanternExtension(): SQLWrapper;
 export function createLanternExtrasExtension(): SQLWrapper;
 
-export function generateTextEmbedding(modelKey: TextEmbeddingModels, value: string): SQLWrapper;
-export function generateImageEmbedding(modelKey: ImageEmbeddingModels, value: string): SQLWrapper;
+export function generateTextEmbedding(modelKey: TextEmbeddingModelType, value: string): PgColumn;
+export function generateImageEmbedding(modelKey: ImageEmbeddingModelType, value: string): PgColumn;
 
-export function textEmbedding(modelKey: TextEmbeddingModels, column: Column): SQLWrapper;
-export function imageEmbedding(modelKey: ImageEmbeddingModels, column: Column): SQLWrapper;
+export function textEmbedding(modelKey: TextEmbeddingModelType, column: Column): PgColumn;
+export function imageEmbedding(modelKey: ImageEmbeddingModelType, column: Column): PgColumn;
 
-export function l2Distance(column: Column, value: number[] | string): SQLWrapper;
-export function cosineDistance(column: Column, value: number[] | string): SQLWrapper;
-export function hammingDistance(column: Column, value: number[] | string): SQLWrapper;
+export function l2Distance(column: Column, value: number[] | string): PgColumn;
+export function cosineDistance(column: Column, value: number[] | string): PgColumn;
+export function hammingDistance(column: Column, value: number[] | string): PgColumn;
