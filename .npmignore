@@ -1,3 +1,5 @@
 .github
 .eslintrc.js
 .editorconfig
+SECURITY.md
+src/**/README.md
