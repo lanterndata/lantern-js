@@ -1,3 +1,4 @@
+import assert from 'node:assert';
 import { describe, it, after } from 'node:test';
 import { MikroORM, EntitySchema } from '@mikro-orm/postgresql';
 
@@ -57,6 +58,8 @@ describe('Mikro-orm', () => {
 
     await MikroORM.createLanternExtension();
     await MikroORM.createLanternExtrasExtension();
+
+    await dropTables(em);
   });
 
   it('should create a table [REAL] with index and data', async () => {
@@ -89,7 +92,7 @@ describe('Mikro-orm', () => {
       );
     `);
 
-    const movies = newBooks.map(movie => em.create(Movie, {
+    const movies = newMovies.map(movie => em.create(Movie, {
       ...movie,
       embedding: toSql(movie.embedding),
     }));
@@ -99,67 +102,66 @@ describe('Mikro-orm', () => {
     await em.execute('CREATE INDEX movie_index ON movies USING hnsw(embedding dist_hamming_ops)');
   });
 
-  // it('should find using L2 distance', async () => {
-  //   const books = await db
-  //     .select()
-  //     .from(Book)
-  //     .orderBy(l2Distance(Book.embedding, [1, 1, 1]))
-  //     .limit(5);
+  it('should find using L2 distance', async () => {
+    const books = await em.createQueryBuilder(Book)
+      .orderBy({ [MikroORM.l2Distance('embedding', [1, 1, 1])]: 'ASC' })
+      .limit(5)
+      .getResult();
 
-  //   assert.deepStrictEqual(
-  //     books.map((v) => v.id),
-  //     [1, 3, 2, 4],
-  //   );
+    assert.deepStrictEqual(
+      books.map((v) => v.id),
+      [1, 3, 2, 4],
+    );
 
-  //   assert.deepStrictEqual(books[0].embedding, [1, 1, 1]);
-  //   assert.deepStrictEqual(books[1].embedding, [1, 1, 2]);
-  //   assert.deepStrictEqual(books[2].embedding, [2, 2, 2]);
-  // });
+    assert.deepStrictEqual(books[0].embedding, [1, 1, 1]);
+    assert.deepStrictEqual(books[1].embedding, [1, 1, 2]);
+    assert.deepStrictEqual(books[2].embedding, [2, 2, 2]);
+  });
 
-  // it('should find using Cosine distance', async () => {
-  //   const books = await db
-  //     .select()
-  //     .from(Book)
-  //     .orderBy(cosineDistance(Book.embedding, [1, 1, 1]))
-  //     .limit(5);
+  it('should find using Cosine distance', async () => {
+    const books = await em.createQueryBuilder(Book)
+      .orderBy({ [MikroORM.cosineDistance('embedding', [1, 1, 1])]: 'ASC' })
+      .limit(5)
+      .getResult();
 
-  //   assert.deepStrictEqual(
-  //     books.map((v) => v.id),
-  //     [1, 2, 3, 4],
-  //   );
-  // });
+    assert.deepStrictEqual(
+      books.map((v) => v.id),
+      [1, 2, 3, 4],
+    );
+  });
 
-  // it('should find using Hamming distance', async () => {
-  //   const movies = await db
-  //     .select()
-  //     .from(Movie)
-  //     .orderBy(hammingDistance(Movie.embedding, [1, 1, 1]))
-  //     .limit(5);
+  it('should find using Hamming distance', async () => {
+    const movies = await em.createQueryBuilder(Movie)
+      .orderBy({ [MikroORM.hammingDistance('embedding', [1, 1, 1])]: 'ASC' })
+      .limit(5)
+      .getResult();
 
-  //   assert.deepStrictEqual(
-  //     movies.map((v) => v.id),
-  //     [1, 3, 2, 4],
-  //   );
-  // });
+    assert.deepStrictEqual(
+      movies.map((v) => v.id),
+      [1, 3, 2, 4],
+    );
+  });
 
-  // it('should fail because of wrong embedding dimensions', async () => {
-  //   await db
-  //     .insert(Book)
-  //     .values([{ embedding: [1] }])
-  //     .catch((e) => {
-  //       assert.equal(e.message.includes('Wrong number of dimensions: 1 instead of 3 expected'), true);
-  //     });
-  // });
+  it('should fail because of wrong embedding dimensions', async () => {
+    const newInvalidBooks = em.create(Book, {
+      embedding: toSql([ 1 ]),
+    });
 
-  // it('should create simple text embedding', async () => {
-  //   const result = await db.execute(generateTextEmbedding(BAAI_BGE_BASE_EN, 'hello world'));
-  //   assert.equal(result[0].text_embedding.length, 768);
-  // });
+    await em.persistAndFlush(newInvalidBooks)
+      .catch((e) => {
+        assert.equal(e.message.includes('Wrong number of dimensions: 1 instead of 3 expected'), true);
+      });
+  });
 
-  // it('should create simple image embedding', async () => {
-  //   const result = await db.execute(generateImageEmbedding(CLIP_VIT_B_32_VISUAL, imageUrl));
-  //   assert.equal(result[0].image_embedding.length, 512);
-  // });
+  it('should create simple text embedding', async () => {
+    const result = await MikroORM.generateTextEmbedding(BAAI_BGE_BASE_EN, 'hello world');
+    assert.equal(result[0].text_embedding.length, 768);
+  });
+
+  it('should create simple image embedding', async () => {
+    const result = await MikroORM.generateImageEmbedding(CLIP_VIT_B_32_VISUAL, imageUrl);
+    assert.equal(result[0].image_embedding.length, 512);
+  });
 
   // it('select text embedding based on book names in the table', async () => {
   //   const bookTextEmbeddings = await db
