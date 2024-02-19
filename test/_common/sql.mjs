@@ -31,6 +31,6 @@ const movies = {
   `,
   dropTable: 'DROP TABLE IF EXISTS movies',
   createIndexDef: 'CREATE INDEX movie_index ON movies USING hnsw(embedding dist_hamming_ops)',
-}
+};
 
 export default { books, movies };
