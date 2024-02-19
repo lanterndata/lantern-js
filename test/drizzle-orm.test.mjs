@@ -5,12 +5,12 @@ import { describe, it, after } from 'node:test';
 import { sql, isNotNull, asc, desc } from 'drizzle-orm';
 import { TextEmbeddingModels, ImageEmbeddingModels } from 'lanterndata/embeddings';
 
-import sqlQueries from './_common/sql.mjs';
 
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { pgTable, serial, text, real, integer } from 'drizzle-orm/pg-core';
-import { imageUrl, newBooks, newMovies, newBooks768Dim, newBooks512Dim } from './_fixtures/fixtures.mjs';
 import { createLanternExtension, createLanternExtrasExtension, generateTextEmbedding, generateImageEmbedding, l2Distance, cosineDistance, hammingDistance, textEmbedding, imageEmbedding } from 'lanterndata/drizzle-orm';
+import { imageUrl, newBooks, newMovies, newBooks768Dim, newBooks512Dim } from './_fixtures/fixtures.mjs';
+import sqlQueries from './_common/sql.mjs';
 
 
 const { BAAI_BGE_BASE_EN } = TextEmbeddingModels;
