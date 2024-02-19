@@ -1,21 +1,24 @@
 import postgres from 'postgres';
 import assert from 'node:assert';
 
-import { sql, isNotNull, asc, desc } from 'drizzle-orm';
 import { describe, it, after } from 'node:test';
+import { sql, isNotNull, asc, desc } from 'drizzle-orm';
+import { TextEmbeddingModels, ImageEmbeddingModels } from 'lanterndata/embeddings';
+
+import sqlQueries from './_common/sql.mjs';
+
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { pgTable, serial, text, real, integer } from 'drizzle-orm/pg-core';
-import { TextEmbeddingModels, ImageEmbeddingModels } from 'lanterndata/embeddings';
+import { imageUrl, newBooks, newMovies, newBooks768Dim, newBooks512Dim } from './_fixtures/fixtures.mjs';
 import { createLanternExtension, createLanternExtrasExtension, generateTextEmbedding, generateImageEmbedding, l2Distance, cosineDistance, hammingDistance, textEmbedding, imageEmbedding } from 'lanterndata/drizzle-orm';
 
-import { imageUrl, newBooks, newMovies, newBooks768Dim, newBooks512Dim } from './fixtures/fixtures.mjs';
 
 const { BAAI_BGE_BASE_EN } = TextEmbeddingModels;
 const { CLIP_VIT_B_32_VISUAL } = ImageEmbeddingModels;
 
 async function dropTables(db) {
-  await db.execute(sql`DROP TABLE IF EXISTS books;`);
-  await db.execute(sql`DROP TABLE IF EXISTS movies;`);
+  await db.execute(sql.raw(sqlQueries.books.dropTable));
+  await db.execute(sql.raw(sqlQueries.movies.dropTable));
 }
 
 describe('Drizzle-orm', () => {
@@ -40,12 +43,7 @@ describe('Drizzle-orm', () => {
   });
 
   it('should create a table [REAL] with index and data', async () => {
-    await client`CREATE TABLE books (
-      id SERIAL PRIMARY KEY,
-      name TEXT,
-      url TEXT,
-      embedding REAL[]
-    )`;
+    await db.execute(sql.raw(sqlQueries.books.createTable));
 
     Book = pgTable('books', {
       id: serial('id').primaryKey(),
@@ -56,16 +54,11 @@ describe('Drizzle-orm', () => {
 
     await db.insert(Book).values(newBooks);
 
-    await client`CREATE INDEX book_index ON books USING hnsw(embedding dist_l2sq_ops)`;
+    await db.execute(sql.raw(sqlQueries.books.createIndexDef));
   });
 
   it('should create a table [INT] with index and data', async () => {
-    await client`CREATE TABLE movies (
-      id SERIAL PRIMARY KEY,
-      name TEXT,
-      url TEXT,
-      embedding INT[]
-    )`;
+    await db.execute(sql.raw(sqlQueries.movies.createTable));
 
     Movie = pgTable('movies', {
       id: serial('id').primaryKey(),
@@ -76,7 +69,7 @@ describe('Drizzle-orm', () => {
 
     await db.insert(Movie).values(newMovies);
 
-    await client`CREATE INDEX movie_index ON movies USING hnsw(embedding dist_hamming_ops)`;
+    await db.execute(sql.raw(sqlQueries.movies.createIndexDef));
   });
 
   it('should find using L2 distance', async () => {
@@ -182,12 +175,8 @@ describe('Drizzle-orm', () => {
   it('should find using Cosine distance and do text_embedding generation', async () => {
     await db.delete(Book);
 
-    await client`DROP INDEX book_index`;
-
-    await client`
-      CREATE INDEX book_index ON books USING hnsw(embedding dist_l2sq_ops)
-      WITH (M=2, ef_construction=10, ef=4, dim=768);
-    `;
+    await db.execute(sql.raw(sqlQueries.books.dropIndex));
+    await db.execute(sql.raw(sqlQueries.books.createIndex768));
 
     await db.insert(Book).values(newBooks768Dim);
 
@@ -203,12 +192,8 @@ describe('Drizzle-orm', () => {
   it('should find using L2 distance and do image_embedding generation', async () => {
     await db.delete(Book);
 
-    await client`DROP INDEX book_index`;
-
-    await client`
-      CREATE INDEX book_index ON books USING hnsw(embedding dist_l2sq_ops)
-      WITH (M=2, ef_construction=10, ef=4, dim=512);
-    `;
+    await db.execute(sql.raw(sqlQueries.books.dropIndex));
+    await db.execute(sql.raw(sqlQueries.books.createIndex512));
 
     await db.insert(Book).values(newBooks512Dim);
 
