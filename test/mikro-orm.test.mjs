@@ -5,14 +5,15 @@ import { MikroORM, EntitySchema } from '@mikro-orm/postgresql';
 import { extend, toSql } from 'lanterndata/mikro-orm';
 import { TextEmbeddingModels, ImageEmbeddingModels } from 'lanterndata/embeddings';
 
-import { imageUrl, newBooks, newMovies, newBooks768Dim, newBooks512Dim } from './fixtures/fixtures.mjs';
+import sqlQueries from './_common/sql.mjs';
+import { imageUrl, newBooks, newMovies, newBooks768Dim, newBooks512Dim } from './_fixtures/fixtures.mjs';
 
 const { BAAI_BGE_BASE_EN } = TextEmbeddingModels;
 const { CLIP_VIT_B_32_VISUAL } = ImageEmbeddingModels;
 
 async function dropTables(em) {
-  await em.execute(`DROP TABLE IF EXISTS books;`);
-  await em.execute(`DROP TABLE IF EXISTS movies;`);
+  await em.execute(sqlQueries.books.dropTable);
+  await em.execute(sqlQueries.movies.dropTable);
 }
 
 describe('Mikro-orm', () => {
@@ -63,14 +64,7 @@ describe('Mikro-orm', () => {
   });
 
   it('should create a table [REAL] with index and data', async () => {
-    await em.execute(`
-      CREATE TABLE books (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR NULL,
-        url VARCHAR NULL,
-        embedding REAL[] NULL
-      );
-    `);
+    await em.execute(sqlQueries.books.createTable);
 
     const books = newBooks.map(book => em.create(Book, {
       ...book,
@@ -79,18 +73,11 @@ describe('Mikro-orm', () => {
     
     await em.persistAndFlush(books);
 
-    await em.execute('CREATE INDEX book_index ON books USING hnsw(embedding dist_l2sq_ops)');
+    await em.execute(sqlQueries.books.createIndexDef);
   });
 
   it('should create a table [INT] with index and data', async () => {
-    await em.execute(`
-      CREATE TABLE movies (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR NULL,
-        url VARCHAR NULL,
-        embedding INT[] NULL
-      );
-    `);
+    await em.execute(sqlQueries.movies.createTable);
 
     const movies = newMovies.map(movie => em.create(Movie, {
       ...movie,
@@ -99,7 +86,7 @@ describe('Mikro-orm', () => {
     
     await em.persistAndFlush(movies);
 
-    await em.execute('CREATE INDEX movie_index ON movies USING hnsw(embedding dist_hamming_ops)');
+    await em.execute(sqlQueries.movies.createIndexDef);
   });
 
   it('should find using L2 distance', async () => {
