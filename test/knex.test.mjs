@@ -1,10 +1,13 @@
 import 'lanterndata/knex';
 import Knex from 'knex';
 import assert from 'node:assert';
+
 import { describe, it, after } from 'node:test';
 import { TextEmbeddingModels, ImageEmbeddingModels } from 'lanterndata/embeddings';
 
-import { imageUrl, newBooks, newMovies, newBooks768Dim, newBooks512Dim } from './fixtures/fixtures.mjs';
+import sqlQueries from './_common/sql.mjs';
+
+import { imageUrl, newBooks, newMovies, newBooks768Dim, newBooks512Dim } from './_fixtures/fixtures.mjs';
 
 const { BAAI_BGE_BASE_EN } = TextEmbeddingModels;
 const { CLIP_VIT_B_32_VISUAL } = ImageEmbeddingModels;
@@ -50,9 +53,7 @@ describe('Knex', () => {
 
     await knex('books').insert(newBooks);
 
-    await knex.raw(`
-      CREATE INDEX book_index ON books USING hnsw(embedding dist_l2sq_ops)
-    `);
+    await knex.raw(sqlQueries.books.createIndexDef);
   });
 
   it('should create a table [INT] with index and data', async () => {
@@ -151,14 +152,10 @@ describe('Knex', () => {
   it('should find using Cosine distance and do text_embedding generation', async () => {
     await knex('books').delete();
 
-    await knex.raw('DROP INDEX book_index');
+    await knex.raw(sqlQueries.books.dropIndex);
+    await knex.raw(sqlQueries.books.createIndex768);
 
     await knex('books').insert(newBooks768Dim);
-
-    await knex.raw(`
-      CREATE INDEX book_index ON books USING hnsw(embedding dist_l2sq_ops)
-      WITH (M=2, ef_construction=10, ef=4, dim=768);
-    `);
 
     const bookEmbeddingsOrderd = await knex('books')
       .whereNotNull('name')
@@ -171,12 +168,8 @@ describe('Knex', () => {
   it('should find using L2 distance and do image_embedding generation', async () => {
     await knex('books').delete();
 
-    await knex.raw('DROP INDEX book_index');
-
-    await knex.raw(`
-      CREATE INDEX book_index ON books USING hnsw(embedding dist_l2sq_ops)
-      WITH (M=2, ef_construction=10, ef=4, dim=512);
-    `);
+    await knex.raw(sqlQueries.books.dropIndex);
+    await knex.raw(sqlQueries.books.createIndex512);
 
     await knex('books').insert(newBooks512Dim);
 

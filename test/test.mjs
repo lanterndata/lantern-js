@@ -1,7 +1,7 @@
 import path from 'node:path';
 
-import { tap } from 'node:test/reporters';
 import { run } from 'node:test';
+import { tap } from 'node:test/reporters';
 
 const orms = {
   knex: path.resolve('test/knex.test.mjs'),
