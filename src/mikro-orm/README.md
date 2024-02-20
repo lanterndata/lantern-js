@@ -90,7 +90,7 @@ import { TextEmbeddingModels, ImageEmbeddingModels } from 'lanterndata/embedding
 // text embeddings
 const bookTextEmbeddings = await em
   .qb(Book, 'b1')
-  .select(['name', MikroORM.textEmbedding(BAAI_BGE_BASE_EN, 'b1.name')])
+  .select(['name', MikroORM.textEmbedding(TextEmbeddingModels.BAAI_BGE_BASE_EN, 'b1.name')])
   .where({ name: { $ne: null } })
   .limit(5)
   .execute('all');
@@ -101,7 +101,7 @@ console.log(bookTextEmbeddings);
 // image embeddings
 const bookImageEmbeddings = await em
   .qb(Book, 'b1')
-  .select(['url', MikroORM.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'b1.url')])
+  .select(['url', MikroORM.imageEmbedding(ImageEmbeddingModels.CLIP_VIT_B_32_VISUAL, 'b1.url')])
   .where({ url: { $ne: null } })
   .limit(5)
   .execute('all');
