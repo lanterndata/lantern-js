@@ -59,8 +59,8 @@ describe('Mikro-orm', () => {
 
     extend(em);
 
-    await MikroORM.createLanternExtension();
-    await MikroORM.createLanternExtrasExtension();
+    await em.createLanternExtension();
+    await em.createLanternExtrasExtension();
 
     await dropTables(em);
   });
@@ -98,7 +98,7 @@ describe('Mikro-orm', () => {
   it('should find using L2 distance', async () => {
     const books = await em
       .qb(Book)
-      .orderBy({ [MikroORM.l2Distance('embedding', [1, 1, 1])]: 'ASC' })
+      .orderBy({ [em.l2Distance('embedding', [1, 1, 1])]: 'ASC' })
       .limit(5)
       .getResult();
 
@@ -115,7 +115,7 @@ describe('Mikro-orm', () => {
   it('should find using Cosine distance', async () => {
     const books = await em
       .qb(Book)
-      .orderBy({ [MikroORM.cosineDistance('embedding', [1, 1, 1])]: 'ASC' })
+      .orderBy({ [em.cosineDistance('embedding', [1, 1, 1])]: 'ASC' })
       .limit(5)
       .getResult();
 
@@ -128,7 +128,7 @@ describe('Mikro-orm', () => {
   it('should find using Hamming distance', async () => {
     const movies = await em
       .qb(Movie)
-      .orderBy({ [MikroORM.hammingDistance('embedding', [1, 1, 1])]: 'ASC' })
+      .orderBy({ [em.hammingDistance('embedding', [1, 1, 1])]: 'ASC' })
       .limit(5)
       .getResult();
 
@@ -149,19 +149,19 @@ describe('Mikro-orm', () => {
   });
 
   it('should create simple text embedding', async () => {
-    const result = await MikroORM.generateTextEmbedding(BAAI_BGE_BASE_EN, 'hello world');
+    const result = await em.generateTextEmbedding(BAAI_BGE_BASE_EN, 'hello world');
     assert.equal(result[0].text_embedding.length, 768);
   });
 
   it('should create simple image embedding', async () => {
-    const result = await MikroORM.generateImageEmbedding(CLIP_VIT_B_32_VISUAL, imageUrl);
+    const result = await em.generateImageEmbedding(CLIP_VIT_B_32_VISUAL, imageUrl);
     assert.equal(result[0].image_embedding.length, 512);
   });
 
   it('select text embedding based on book names in the table', async () => {
     const bookTextEmbeddings = await em
       .qb(Book, 'b1')
-      .select(['name', MikroORM.textEmbedding(BAAI_BGE_BASE_EN, 'b1.name')])
+      .select(['name', em.textEmbedding(BAAI_BGE_BASE_EN, 'b1.name')])
       .where({ name: { $ne: null } })
       .limit(5)
       .execute('all');
@@ -178,7 +178,7 @@ describe('Mikro-orm', () => {
   it('select image embedding based on book urls in the table', async () => {
     const bookImageEmbeddings = await em
       .qb(Book, 'b1')
-      .select(['url', MikroORM.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'b1.url')])
+      .select(['url', em.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'b1.url')])
       .where({ url: { $ne: null } })
       .limit(5)
       .execute('all');
@@ -212,7 +212,7 @@ describe('Mikro-orm', () => {
       .qb(Book, 'b1')
       .select()
       .where({ name: { $ne: null } })
-      .orderBy({ [MikroORM.cosineDistance('embedding', MikroORM.textEmbedding(BAAI_BGE_BASE_EN, 'b1.name'))]: 'ASC' })
+      .orderBy({ [em.cosineDistance('embedding', em.textEmbedding(BAAI_BGE_BASE_EN, 'b1.name'))]: 'ASC' })
       .limit(2)
       .execute('all');
 
@@ -239,7 +239,7 @@ describe('Mikro-orm', () => {
       .qb(Book, 'b1')
       .select()
       .where({ url: { $ne: null } })
-      .orderBy({ [MikroORM.l2Distance('embedding', MikroORM.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'b1.url'))]: 'DESC' })
+      .orderBy({ [em.l2Distance('embedding', em.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'b1.url'))]: 'DESC' })
       .limit(2)
       .execute('all');
 

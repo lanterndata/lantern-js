@@ -1,6 +1,6 @@
 {
   "name": "lanterndata",
-  "version": "0.0.15",
+  "version": "0.0.17",
   "description": "JavaScript/Typescript ORMs for Lantern Vector Database",
   "main": "index.js",
   "scripts": {
