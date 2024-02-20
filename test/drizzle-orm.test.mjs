@@ -1,15 +1,15 @@
 import postgres from 'postgres';
 import assert from 'node:assert';
 
+import { drizzle } from 'drizzle-orm/postgres-js';
 import { describe, it, after } from 'node:test';
 import { sql, isNotNull, asc, desc } from 'drizzle-orm';
 import { TextEmbeddingModels, ImageEmbeddingModels } from 'lanterndata/embeddings';
 
-import { drizzle } from 'drizzle-orm/postgres-js';
 import { pgTable, serial, text, real, integer } from 'drizzle-orm/pg-core';
 import { createLanternExtension, createLanternExtrasExtension, generateTextEmbedding, generateImageEmbedding, l2Distance, cosineDistance, hammingDistance, textEmbedding, imageEmbedding } from 'lanterndata/drizzle-orm';
-import { imageUrl, newBooks, newMovies, newBooks768Dim, newBooks512Dim } from './_fixtures/fixtures.mjs';
 import sqlQueries from './_common/sql.mjs';
+import { imageUrl, newBooks, newMovies, newBooks768Dim, newBooks512Dim } from './_fixtures/fixtures.mjs';
 
 const { BAAI_BGE_BASE_EN } = TextEmbeddingModels;
 const { CLIP_VIT_B_32_VISUAL } = ImageEmbeddingModels;
@@ -158,7 +158,7 @@ describe('Drizzle-orm', () => {
         image_embedding: imageEmbedding(CLIP_VIT_B_32_VISUAL, Book.url),
       })
       .from(Book)
-      .where(isNotNull(Book.name))
+      .where(isNotNull(Book.url))
       .limit(5);
 
     assert.equal(bookImageEmbeddings.length, 2);
@@ -181,6 +181,7 @@ describe('Drizzle-orm', () => {
     const bookEmbeddingsOrderd = await db
       .select()
       .from(Book)
+      .where(isNotNull(Book.name))
       .orderBy(asc(cosineDistance(Book.embedding, textEmbedding(BAAI_BGE_BASE_EN, Book.name))))
       .limit(2);
 
@@ -198,6 +199,7 @@ describe('Drizzle-orm', () => {
     const bookEmbeddingsOrderd = await db
       .select()
       .from(Book)
+      .where(isNotNull(Book.url))
       .orderBy(desc(l2Distance(Book.embedding, imageEmbedding(CLIP_VIT_B_32_VISUAL, Book.url))))
       .limit(2);
 

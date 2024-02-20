@@ -2,7 +2,3 @@
 .eslintrc.js
 .editorconfig
 SECURITY.md
-
-src/knex/README.md
-src/sequelize/README.md
-src/drizzle-orm/README.md

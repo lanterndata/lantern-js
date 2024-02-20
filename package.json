@@ -38,6 +38,10 @@
       "types": "./types/sequelize/index.d.ts",
       "default": "./src/sequelize/sequelize.js"
     },
+    "./mikro-orm": {
+      "types": "./types/mikro-orm/index.d.ts",
+      "default": "./src/mikro-orm/mikro-orm.js"
+    },
     "./drizzle-orm": {
       "types": "./types/drizzle-orm/index.d.ts",
       "default": "./src/drizzle-orm/drizzle-orm.js"
@@ -59,6 +63,9 @@
       "sequelize": [
         "types/sequelize/index.d.ts"
       ],
+      "mikro-orm": [
+        "types/mikro-orm/index.d.ts"
+      ],
       "drizzle-orm": [
         "types/drizzle-orm/index.d.ts"
       ],
@@ -68,6 +75,8 @@
     }
   },
   "devDependencies": {
+    "@mikro-orm/core": "^6.1.4",
+    "@mikro-orm/postgresql": "^6.1.4",
     "drizzle-orm": "^0.29.3",
     "eslint": "^8.56.0",
     "eslint-config-airbnb-base": "^15.0.0",
