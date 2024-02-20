@@ -1,5 +1,4 @@
 const { raw } = require('@mikro-orm/core');
-const { MikroORM } = require('@mikro-orm/postgresql');
 
 const { fromSql, toSql } = require('../_common/utils/sql');
 const { getTextEmbeddingModelName, getImageEmbeddingModelName } = require('../_embeddings/models');
@@ -14,46 +13,46 @@ function distance(op, column, value, em) {
 
 function extend(em) {
   // extension support related methods
-  MikroORM.createLanternExtension = function () {
+  em.createLanternExtension = function () {
     return em.execute('CREATE EXTENSION IF NOT EXISTS lantern');
   };
 
-  MikroORM.createLanternExtrasExtension = function () {
+  em.createLanternExtrasExtension = function () {
     return em.execute('CREATE EXTENSION IF NOT EXISTS lantern_extras');
   };
 
   // embedding generation methods
-  MikroORM.generateTextEmbedding = function (modelKey, value) {
+  em.generateTextEmbedding = function (modelKey, value) {
     const modelName = getTextEmbeddingModelName(modelKey);
     return em.execute(`SELECT text_embedding('${modelName}', ?)`, [value]);
   };
 
-  MikroORM.generateImageEmbedding = function (modelKey, value) {
+  em.generateImageEmbedding = function (modelKey, value) {
     const modelName = getImageEmbeddingModelName(modelKey);
     return em.execute(`SELECT image_embedding('${modelName}', ?)`, [value]);
   };
 
   // embedding literals
-  MikroORM.textEmbedding = function (modelKey, value) {
+  em.textEmbedding = function (modelKey, value) {
     const modelName = getTextEmbeddingModelName(modelKey);
     return embedding(`text_embedding('${modelName}', ??)`, [value], em);
   };
 
-  MikroORM.imageEmbedding = function (modelKey, value) {
+  em.imageEmbedding = function (modelKey, value) {
     const modelName = getImageEmbeddingModelName(modelKey);
     return embedding(`image_embedding('${modelName}', ??)`, [value], em);
   };
 
   // distance search literals
-  MikroORM.l2Distance = function (column, value) {
+  em.l2Distance = function (column, value) {
     return distance('<->', column, value, em);
   };
 
-  MikroORM.cosineDistance = function (column, value) {
+  em.cosineDistance = function (column, value) {
     return distance('<=>', column, value, em);
   };
 
-  MikroORM.hammingDistance = function (column, value) {
+  em.hammingDistance = function (column, value) {
     return distance('<+>', column, value, em);
   };
 }
