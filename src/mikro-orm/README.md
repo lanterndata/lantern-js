@@ -8,6 +8,7 @@ If you've already executed this through a raw query, then skip this step.
 
 ```js
 import { MikroORM } from '@mikro-orm/postgresql';
+import { extend } from 'lanterndata/mikro-orm';
 
 const orm = await MikroORM.init({});
 const em = orm.em.fork();
@@ -23,6 +24,8 @@ await MikroORM.createLanternExtrasExtension();
 ## Create the Table and add an Index
 
 ```js
+import { toSql } from 'lanterndata/mikro-orm';
+
 const Book = new EntitySchema({
   name: 'Book',
   tableName: 'books',
@@ -35,6 +38,16 @@ const Book = new EntitySchema({
 });
 
 await em.execute('CREATE INDEX book_index ON books USING hnsw(embedding dist_l2sq_ops');
+
+const books = booksToInsert.map((book) =>
+  em.create(Book, {
+    ...book,
+    // use toSql method to conver [1,2,3] inro '{1,2,3}'
+    embedding: toSql(book.embedding),
+  }),
+);
+
+await em.persistAndFlush(books);
 ```
 
 ## Vector Searches
@@ -90,7 +103,7 @@ import { TextEmbeddingModels, ImageEmbeddingModels } from 'lanterndata/embedding
 // text embeddings
 const bookTextEmbeddings = await em
   .qb(Book, 'b1')
-  .select(['name', MikroORM.textEmbedding(BAAI_BGE_BASE_EN, 'b1.name')])
+  .select(['name', MikroORM.textEmbedding(TextEmbeddingModels.BAAI_BGE_BASE_EN, 'b1.name')])
   .where({ name: { $ne: null } })
   .limit(5)
   .execute('all');
@@ -101,7 +114,7 @@ console.log(bookTextEmbeddings);
 // image embeddings
 const bookImageEmbeddings = await em
   .qb(Book, 'b1')
-  .select(['url', MikroORM.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'b1.url')])
+  .select(['url', MikroORM.imageEmbedding(ImageEmbeddingModels.CLIP_VIT_B_32_VISUAL, 'b1.url')])
   .where({ url: { $ne: null } })
   .limit(5)
   .execute('all');
