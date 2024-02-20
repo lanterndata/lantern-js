@@ -8,6 +8,7 @@ If you've already executed this through a raw query, then skip this step.
 
 ```js
 import { MikroORM } from '@mikro-orm/postgresql';
+import { extend } from 'lanterndata/mikro-orm';
 
 const orm = await MikroORM.init({});
 const em = orm.em.fork();
@@ -23,6 +24,8 @@ await MikroORM.createLanternExtrasExtension();
 ## Create the Table and add an Index
 
 ```js
+import { toSql } from 'lanterndata/mikro-orm';
+
 const Book = new EntitySchema({
   name: 'Book',
   tableName: 'books',
@@ -35,6 +38,16 @@ const Book = new EntitySchema({
 });
 
 await em.execute('CREATE INDEX book_index ON books USING hnsw(embedding dist_l2sq_ops');
+
+const books = booksToInsert.map((book) =>
+  em.create(Book, {
+    ...book,
+    // use toSql method to conver [1,2,3] inro '{1,2,3}'
+    embedding: toSql(book.embedding),
+  }),
+);
+
+await em.persistAndFlush(books);
 ```
 
 ## Vector Searches
