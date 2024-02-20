@@ -1,6 +1,6 @@
 const books = {
   createTable: `
-    CREATE TABLE books (
+    CREATE TABLE IF NOT EXISTS books (
       id SERIAL PRIMARY KEY,
       name TEXT,
       url TEXT,
@@ -8,13 +8,13 @@ const books = {
     )
   `,
   dropTable: `DROP TABLE IF EXISTS books`,
-  createIndexDef: 'CREATE INDEX book_index ON books USING hnsw(embedding dist_l2sq_ops)',
+  createIndexDef: 'CREATE INDEX IF NOT EXISTS book_index ON books USING hnsw(embedding dist_l2sq_ops)',
   createIndex768: `
-    CREATE INDEX book_index ON books USING hnsw(embedding dist_l2sq_ops)
+    CREATE INDEX IF NOT EXISTS book_index ON books USING hnsw(embedding dist_l2sq_ops)
     WITH (M=2, ef_construction=10, ef=4, dim=768);
   `,
   createIndex512: `
-    CREATE INDEX book_index ON books USING hnsw(embedding dist_l2sq_ops)
+    CREATE INDEX IF NOT EXISTS book_index ON books USING hnsw(embedding dist_l2sq_ops)
     WITH (M=2, ef_construction=10, ef=4, dim=512);
   `,
   dropIndex: 'DROP INDEX book_index',
@@ -22,7 +22,7 @@ const books = {
 
 const movies = {
   createTable: `
-    CREATE TABLE movies (
+    CREATE TABLE IF NOT EXISTS movies (
       id SERIAL PRIMARY KEY,
       name TEXT,
       url TEXT,
@@ -30,7 +30,7 @@ const movies = {
     )
   `,
   dropTable: 'DROP TABLE IF EXISTS movies',
-  createIndexDef: 'CREATE INDEX movie_index ON movies USING hnsw(embedding dist_hamming_ops)',
-}
+  createIndexDef: 'CREATE INDEX IF NOT EXISTS movie_index ON movies USING hnsw(embedding dist_hamming_ops)',
+};
 
 export default { books, movies };

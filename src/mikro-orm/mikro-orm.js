@@ -5,15 +5,11 @@ const { fromSql, toSql } = require('../_common/utils/sql');
 const { getTextEmbeddingModelName, getImageEmbeddingModelName } = require('../_embeddings/models');
 
 function embedding(query, values, em) {
-  return raw
-    ? raw(query, values)
-    : em.raw(query, values);
+  return raw ? raw(query, values) : em.raw(query, values);
 }
 
 function distance(op, column, value, em) {
-  return raw
-    ? raw(`?? ${op} ?`, [column, toSql(value)])
-    : em.raw(`?? ${op} ?`, [column, toSql(value)]);
+  return raw ? raw(`?? ${op} ?`, [column, toSql(value)]) : em.raw(`?? ${op} ?`, [column, toSql(value)]);
 }
 
 function extend(em) {

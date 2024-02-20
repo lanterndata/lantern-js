@@ -1,11 +1,12 @@
 import assert from 'node:assert';
-import { describe, it, after } from 'node:test';
-import { MikroORM, EntitySchema } from '@mikro-orm/postgresql';
 
+import { describe, it, after } from 'node:test';
 import { extend, toSql } from 'lanterndata/mikro-orm';
+import { MikroORM, EntitySchema } from '@mikro-orm/postgresql';
 import { TextEmbeddingModels, ImageEmbeddingModels } from 'lanterndata/embeddings';
 
 import sqlQueries from './_common/sql.mjs';
+
 import { imageUrl, newBooks, newMovies, newBooks768Dim, newBooks512Dim } from './_fixtures/fixtures.mjs';
 
 const { BAAI_BGE_BASE_EN } = TextEmbeddingModels;
@@ -17,7 +18,8 @@ async function dropTables(em) {
 }
 
 describe('Mikro-orm', () => {
-  let em; let orm;
+  let em;
+  let orm;
 
   const Book = new EntitySchema({
     name: 'Book',
@@ -66,11 +68,13 @@ describe('Mikro-orm', () => {
   it('should create a table [REAL] with index and data', async () => {
     await em.execute(sqlQueries.books.createTable);
 
-    const books = newBooks.map(book => em.create(Book, {
-      ...book,
-      embedding: toSql(book.embedding),
-    }));
-    
+    const books = newBooks.map((book) =>
+      em.create(Book, {
+        ...book,
+        embedding: toSql(book.embedding),
+      }),
+    );
+
     await em.persistAndFlush(books);
 
     await em.execute(sqlQueries.books.createIndexDef);
@@ -79,18 +83,21 @@ describe('Mikro-orm', () => {
   it('should create a table [INT] with index and data', async () => {
     await em.execute(sqlQueries.movies.createTable);
 
-    const movies = newMovies.map(movie => em.create(Movie, {
-      ...movie,
-      embedding: toSql(movie.embedding),
-    }));
-    
+    const movies = newMovies.map((movie) =>
+      em.create(Movie, {
+        ...movie,
+        embedding: toSql(movie.embedding),
+      }),
+    );
+
     await em.persistAndFlush(movies);
 
     await em.execute(sqlQueries.movies.createIndexDef);
   });
 
   it('should find using L2 distance', async () => {
-    const books = await em.createQueryBuilder(Book)
+    const books = await em
+      .qb(Book)
       .orderBy({ [MikroORM.l2Distance('embedding', [1, 1, 1])]: 'ASC' })
       .limit(5)
       .getResult();
@@ -106,7 +113,8 @@ describe('Mikro-orm', () => {
   });
 
   it('should find using Cosine distance', async () => {
-    const books = await em.createQueryBuilder(Book)
+    const books = await em
+      .qb(Book)
       .orderBy({ [MikroORM.cosineDistance('embedding', [1, 1, 1])]: 'ASC' })
       .limit(5)
       .getResult();
@@ -118,7 +126,8 @@ describe('Mikro-orm', () => {
   });
 
   it('should find using Hamming distance', async () => {
-    const movies = await em.createQueryBuilder(Movie)
+    const movies = await em
+      .qb(Movie)
       .orderBy({ [MikroORM.hammingDistance('embedding', [1, 1, 1])]: 'ASC' })
       .limit(5)
       .getResult();
@@ -131,13 +140,12 @@ describe('Mikro-orm', () => {
 
   it('should fail because of wrong embedding dimensions', async () => {
     const newInvalidBooks = em.create(Book, {
-      embedding: toSql([ 1 ]),
+      embedding: toSql([1]),
     });
 
-    await em.persistAndFlush(newInvalidBooks)
-      .catch((e) => {
-        assert.equal(e.message.includes('Wrong number of dimensions: 1 instead of 3 expected'), true);
-      });
+    await em.persistAndFlush(newInvalidBooks).catch((e) => {
+      assert.equal(e.message.includes('Wrong number of dimensions: 1 instead of 3 expected'), true);
+    });
   });
 
   it('should create simple text embedding', async () => {
@@ -150,85 +158,93 @@ describe('Mikro-orm', () => {
     assert.equal(result[0].image_embedding.length, 512);
   });
 
-  // it('select text embedding based on book names in the table', async () => {
-  //   const bookTextEmbeddings = await db
-  //     .select({
-  //       name: Book.name,
-  //       text_embedding: textEmbedding(BAAI_BGE_BASE_EN, Book.name),
-  //     })
-  //     .from(Book)
-  //     .where(isNotNull(Book.name))
-  //     .limit(5);
+  it('select text embedding based on book names in the table', async () => {
+    const bookTextEmbeddings = await em
+      .qb(Book, 'b1')
+      .select(['name', MikroORM.textEmbedding(BAAI_BGE_BASE_EN, 'b1.name')])
+      .where({ name: { $ne: null } })
+      .limit(5)
+      .execute('all');
 
-  //   assert.equal(bookTextEmbeddings.length, 2);
+    assert.equal(bookTextEmbeddings.length, 2);
 
-  //   bookTextEmbeddings.forEach((book) => {
-  //     assert(book.name);
-  //     assert(Array.isArray(book.text_embedding));
-  //     assert(book.text_embedding.length > 0);
-  //   });
-  // });
+    bookTextEmbeddings.forEach((book) => {
+      assert(book.name);
+      assert(Array.isArray(book.text_embedding));
+      assert(book.text_embedding.length > 0);
+    });
+  });
 
-  // it('select image embedding based on book urls in the table', async () => {
-  //   const bookImageEmbeddings = await db
-  //     .select({
-  //       url: Book.url,
-  //       image_embedding: imageEmbedding(CLIP_VIT_B_32_VISUAL, Book.url),
-  //     })
-  //     .from(Book)
-  //     .where(isNotNull(Book.name))
-  //     .limit(5);
+  it('select image embedding based on book urls in the table', async () => {
+    const bookImageEmbeddings = await em
+      .qb(Book, 'b1')
+      .select(['url', MikroORM.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'b1.url')])
+      .where({ url: { $ne: null } })
+      .limit(5)
+      .execute('all');
 
-  //   assert.equal(bookImageEmbeddings.length, 2);
+    assert.equal(bookImageEmbeddings.length, 2);
 
-  //   bookImageEmbeddings.forEach((book) => {
-  //     assert(book.url);
-  //     assert(Array.isArray(book.image_embedding));
-  //     assert(book.image_embedding.length > 0);
-  //   });
-  // });
+    bookImageEmbeddings.forEach((book) => {
+      assert(book.url);
+      assert(Array.isArray(book.image_embedding));
+      assert(book.image_embedding.length > 0);
+    });
+  });
 
-  // it('should find using Cosine distance and do text_embedding generation', async () => {
-  //   await db.delete(Book);
+  it('should find using Cosine distance and do text_embedding generation', async () => {
+    await em.qb(Book).delete();
 
-  //   await client`DROP INDEX book_index`;
+    await em.execute(sqlQueries.books.dropIndex);
 
-  //   await client`
-  //     CREATE INDEX book_index ON books USING hnsw(embedding dist_l2sq_ops)
-  //     WITH (M=2, ef_construction=10, ef=4, dim=768);
-  //   `;
+    await em.execute(sqlQueries.books.createIndex768);
 
-  //   await db.insert(Book).values(newBooks768Dim);
+    const books = newBooks768Dim.map((book) =>
+      em.create(Book, {
+        ...book,
+        embedding: toSql(book.embedding),
+      }),
+    );
 
-  //   const bookEmbeddingsOrderd = await db
-  //     .select()
-  //     .from(Book)
-  //     .orderBy(asc(cosineDistance(Book.embedding, textEmbedding(BAAI_BGE_BASE_EN, Book.name))))
-  //     .limit(2);
+    await em.persistAndFlush(books);
 
-  //   assert.equal(bookEmbeddingsOrderd.length, 2);
-  // });
+    const bookEmbeddingsOrderd = await em
+      .qb(Book, 'b1')
+      .select()
+      .where({ name: { $ne: null } })
+      .orderBy({ [MikroORM.cosineDistance('embedding', MikroORM.textEmbedding(BAAI_BGE_BASE_EN, 'b1.name'))]: 'ASC' })
+      .limit(2)
+      .execute('all');
 
-  // it('should find using L2 distance and do image_embedding generation', async () => {
-  //   await db.delete(Book);
+    assert.equal(bookEmbeddingsOrderd.length, 2);
+  });
 
-  //   await client`DROP INDEX book_index`;
+  it('should find using L2 distance and do image_embedding generation', async () => {
+    await em.qb(Book).delete();
 
-  //   await client`
-  //     CREATE INDEX book_index ON books USING hnsw(embedding dist_l2sq_ops)
-  //     WITH (M=2, ef_construction=10, ef=4, dim=512);
-  //   `;
+    await em.execute(sqlQueries.books.dropIndex);
 
-  //   await db.insert(Book).values(newBooks512Dim);
+    await em.execute(sqlQueries.books.createIndex512);
 
-  //   const bookEmbeddingsOrderd = await db
-  //     .select()
-  //     .from(Book)
-  //     .orderBy(desc(l2Distance(Book.embedding, imageEmbedding(CLIP_VIT_B_32_VISUAL, Book.url))))
-  //     .limit(2);
+    const books = newBooks512Dim.map((book) =>
+      em.create(Book, {
+        ...book,
+        embedding: toSql(book.embedding),
+      }),
+    );
 
-  //   assert.equal(bookEmbeddingsOrderd.length, 2);
-  //   assert.equal(bookEmbeddingsOrderd[0].name, 'Harry Potter');
-  //   assert.equal(bookEmbeddingsOrderd[1].name, 'Greek Myths');
-  // });
+    await em.persistAndFlush(books);
+
+    const bookEmbeddingsOrderd = await em
+      .qb(Book, 'b1')
+      .select()
+      .where({ url: { $ne: null } })
+      .orderBy({ [MikroORM.l2Distance('embedding', MikroORM.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'b1.url'))]: 'DESC' })
+      .limit(2)
+      .execute('all');
+
+    assert.equal(bookEmbeddingsOrderd.length, 2);
+    assert.equal(bookEmbeddingsOrderd[0].name, 'Harry Potter');
+    assert.equal(bookEmbeddingsOrderd[1].name, 'Greek Myths');
+  });
 });
