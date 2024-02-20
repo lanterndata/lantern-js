@@ -1,17 +1,20 @@
 import assert from 'node:assert';
 import lantern from 'lanterndata/sequelize';
+
 import { describe, it, after } from 'node:test';
 import { Sequelize, DataTypes, Op } from 'sequelize';
 import { TextEmbeddingModels, ImageEmbeddingModels } from 'lanterndata/embeddings';
 
-import { imageUrl, newBooks, newMovies, newBooks768Dim, newBooks512Dim } from './fixtures/fixtures.mjs';
+import sqlQueries from './_common/sql.mjs';
+
+import { imageUrl, newBooks, newMovies, newBooks768Dim, newBooks512Dim } from './_fixtures/fixtures.mjs';
 
 const { BAAI_BGE_BASE_EN } = TextEmbeddingModels;
 const { CLIP_VIT_B_32_VISUAL } = ImageEmbeddingModels;
 
 async function dropTables(sequelize) {
-  await sequelize.query('DROP TABLE IF EXISTS books;');
-  await sequelize.query('DROP TABLE IF EXISTS movies;');
+  await sequelize.query(sqlQueries.books.dropTable);
+  await sequelize.query(sqlQueries.movies.dropTable);
 }
 
 describe('Sequelize', () => {
@@ -67,9 +70,7 @@ describe('Sequelize', () => {
 
     await Book.bulkCreate(newBooks);
 
-    await sequelize.query(`
-      CREATE INDEX book_index ON books USING hnsw(embedding dist_l2sq_ops)
-    `);
+    await sequelize.query(sqlQueries.books.createIndexDef);
   });
 
   it('should create a table [INT] with index and data', async () => {
@@ -93,9 +94,7 @@ describe('Sequelize', () => {
 
     await Movie.bulkCreate(newMovies);
 
-    await sequelize.query(`
-      CREATE INDEX movie_index ON movies USING hnsw(embedding dist_hamming_ops)
-    `);
+    await sequelize.query(sqlQueries.movies.createIndexDef);
   });
 
   it('should find using L2 distance', async () => {
@@ -191,12 +190,8 @@ describe('Sequelize', () => {
   it('should find using Cosine distance and do text_embedding generation', async () => {
     await Book.destroy({ where: {} });
 
-    await sequelize.query('DROP INDEX book_index');
-
-    await sequelize.query(`
-      CREATE INDEX book_index ON books USING hnsw(embedding dist_l2sq_ops)
-      WITH (M=2, ef_construction=10, ef=4, dim=768);
-    `);
+    await sequelize.query(sqlQueries.books.dropIndex);
+    await sequelize.query(sqlQueries.books.createIndex768);
 
     await Book.bulkCreate(newBooks768Dim);
 
@@ -212,12 +207,8 @@ describe('Sequelize', () => {
   it('should find using L2 distance and do image_embedding generation', async () => {
     await Book.destroy({ where: {} });
 
-    await sequelize.query('DROP INDEX book_index');
-
-    await sequelize.query(`
-      CREATE INDEX book_index ON books USING hnsw(embedding dist_l2sq_ops)
-      WITH (M=2, ef_construction=10, ef=4, dim=512);
-    `);
+    await sequelize.query(sqlQueries.books.dropIndex);
+    await sequelize.query(sqlQueries.books.createIndex512);
 
     await Book.bulkCreate(newBooks512Dim);
 
