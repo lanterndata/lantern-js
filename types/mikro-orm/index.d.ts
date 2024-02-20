@@ -12,12 +12,12 @@ declare module '@mikro-orm/core' {
     cosineDistance: (column: string, vector: number[] | string) => any;
     hammingDistance: (column: string, vector: number[] | string) => any;
 
-    textEmbedding: (modelKey: TextEmbeddingModelType, value: string) => any;
-    imageEmbedding: (modelKey: ImageEmbeddingModelType, value: string) => any;
-    generateTextEmbedding: (modelKey: TextEmbeddingModelType, value: string) => Promise<any>;
-    generateImageEmbedding: (modelKey: ImageEmbeddingModelType, value: string) => Promise<any>;
+    static textEmbedding: (modelKey: TextEmbeddingModelType, value: string) => any;
+    static imageEmbedding: (modelKey: ImageEmbeddingModelType, value: string) => any;
+    static generateTextEmbedding: (modelKey: TextEmbeddingModelType, value: string) => Promise<any>;
+    static generateImageEmbedding: (modelKey: ImageEmbeddingModelType, value: string) => Promise<any>;
 
-    createLanternExtension: () => Promise<void>;
-    createLanternExtrasExtension: () => Promise<void>;
+    static createLanternExtension: () => Promise<void>;
+    static createLanternExtrasExtension: () => Promise<void>;
   }
 }
