@@ -159,7 +159,7 @@ describe('Knex', () => {
 
     const bookEmbeddingsOrderd = await knex('books')
       .whereNotNull('name')
-      .orderBy(knex.l2Distance('embedding', knex.textEmbedding(BAAI_BGE_BASE_EN, 'name')), 'asc')
+      .orderBy(knex.cosineDistance('embedding', knex.textEmbedding(BAAI_BGE_BASE_EN, 'name')), 'asc')
       .limit(2);
 
     assert.equal(bookEmbeddingsOrderd.length, 2);

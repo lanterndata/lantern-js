@@ -34,6 +34,10 @@
       "types": "./types/knex/index.d.ts",
       "default": "./src/knex/knex.js"
     },
+    "./kysely": {
+      "types": "./types/kysely/index.d.ts",
+      "default": "./src/kysely/kysely.js"
+    },
     "./sequelize": {
       "types": "./types/sequelize/index.d.ts",
       "default": "./src/sequelize/sequelize.js"
@@ -60,6 +64,9 @@
       "knex": [
         "types/knex/index.d.ts"
       ],
+      "kysely": [
+        "types/kysely/index.d.ts"
+      ],
       "sequelize": [
         "types/sequelize/index.d.ts"
       ],
@@ -83,6 +90,7 @@
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-import": "^2.29.1",
     "knex": "^3.1.0",
+    "kysely": "^0.27.2",
     "pg": "^8.11.3",
     "postgres": "^3.4.3",
     "prettier": "3.2.5",
