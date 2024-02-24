@@ -13,10 +13,10 @@ import { extend } from 'lanterndata/kysely';
 const dialect = new PostgresDialect({});
 const db = new Kysely({ dialect });
 
-extend({ Kysely, sql });
+extend(sql);
 
-await Kysely.createLanternExtension().execute(db);
-await Kysely.createLanternExtrasExtension().execute(db);
+await sql.createLanternExtension().execute(db);
+await sql.createLanternExtrasExtension().execute(db);
 ```
 
 ## Create the Table and add an Index
@@ -44,21 +44,21 @@ You can performe vectore search using those distance methods.
 await db
   .selectFrom('movies')
   .selectAll()
-  .orderBy(Kysely.l2Distance('embedding', [1, 1, 1]))
+  .orderBy(sql.l2Distance('embedding', [1, 1, 1]))
   .limit(5)
   .execute();
 
 await db
   .selectFrom('movies')
   .selectAll()
-  .orderBy(Kysely.cosineDistance('embedding', [1, 1, 1]))
+  .orderBy(sql.cosineDistance('embedding', [1, 1, 1]))
   .limit(5)
   .execute();
 
 await db
   .selectFrom('movies')
   .selectAll()
-  .orderBy(Kysely.hammingDistance('embedding', [1, 1, 1]))
+  .orderBy(sql.hammingDistance('embedding', [1, 1, 1]))
   .limit(5)
   .execute();
 ```
@@ -68,36 +68,36 @@ await db
 ### Static generation
 
 ```js
-import { Kysely, sql } from 'kysely';
+import { sql } from 'kysely';
 import { extend } from 'lanterndata/kysely';
 import { TextEmbeddingModels, ImageEmbeddingModels } from 'lanterndata/embeddings';
 
 // const db = ...
-extend({ Kysely, sql });
+extend(sql);
 
 // text embedding
 const text = 'hello world';
-const embedding = await Kysely.generateTextEmbedding(TextEmbeddingModels.BAAI_BGE_BASE_EN, text).execute(db);
+const embedding = await sql.generateTextEmbedding(TextEmbeddingModels.BAAI_BGE_BASE_EN, text).execute(db);
 console.log(embedding.rows[0].text_embedding);
 
 // image embedding
 const imageUrl = 'https://lantern.dev/images/home/footer.png';
-const embedding = await Kysely.generateImageEmbedding(ImageEmbeddingModels.CLIP_VIT_B_32_VISUAL, imageUrl).execute(db);
+const embedding = await sql.generateImageEmbedding(ImageEmbeddingModels.CLIP_VIT_B_32_VISUAL, imageUrl).execute(db);
 console.log(embedding.rows[0].image_embedding);
 ```
 
 ### Dynamic generation
 
 ```js
-import { Kysely, sql } from 'kysely';
+import { sql } from 'kysely';
 import { extend } from 'lanterndata/kysely';
 import { TextEmbeddingModels, ImageEmbeddingModels } from 'lanterndata/embeddings';
 
 // const db = ...
-extend({ Kysely, sql });
+extend(sql);
 
 // text embeddings
-const selectLiteral = Kysely.textEmbedding(TextEmbeddingModels.BAAI_BGE_BASE_EN, 'name');
+const selectLiteral = sql.textEmbedding(TextEmbeddingModels.BAAI_BGE_BASE_EN, 'name');
 const bookEmbeddings = await db
     .selectFrom('books')
     .select(['name', selectLiteral])
@@ -109,7 +109,7 @@ const bookEmbeddings = await db
 console.log(bookTextEmbeddings);
 
 // image embeddings
-const selectLiteral = Kysely.imageEmbedding(ImageEmbeddingModels.CLIP_VIT_B_32_VISUAL, 'url');
+const selectLiteral = sql.imageEmbedding(ImageEmbeddingModels.CLIP_VIT_B_32_VISUAL, 'url');
 const bookEmbeddings = await db
     .selectFrom('books')
     .select(['url', selectLiteral])
@@ -130,7 +130,7 @@ const bookEmbeddingsOrderd = await db
   .selectFrom('books')
   .selectAll()
   .where('url', 'is not', null)
-  .orderBy(Kysely.l2Distance('embedding', Kysely.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'url')), 'desc')
+  .orderBy(sql.l2Distance('embedding', sql.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'url')), 'desc')
   .limit(2)
   .execute();
 ```

@@ -46,10 +46,10 @@ describe('Kysely', () => {
 
     db = new Kysely(kyselyOptions);
 
-    extend({ Kysely, sql });
+    extend(sql);
 
-    await Kysely.createLanternExtension().execute(db);
-    await Kysely.createLanternExtrasExtension().execute(db);
+    await sql.createLanternExtension().execute(db);
+    await sql.createLanternExtrasExtension().execute(db);
 
     await dropTables(db);
   });
@@ -89,7 +89,7 @@ describe('Kysely', () => {
     const books = await db
       .selectFrom('books')
       .selectAll()
-      .orderBy(Kysely.l2Distance('embedding', [1, 1, 1]))
+      .orderBy(sql.l2Distance('embedding', [1, 1, 1]))
       .limit(5)
       .execute();
 
@@ -107,7 +107,7 @@ describe('Kysely', () => {
     const books = await db
       .selectFrom('books')
       .selectAll()
-      .orderBy(Kysely.cosineDistance('embedding', [1, 1, 1]))
+      .orderBy(sql.cosineDistance('embedding', [1, 1, 1]))
       .limit(5)
       .execute();
 
@@ -121,7 +121,7 @@ describe('Kysely', () => {
     const movies = await db
       .selectFrom('movies')
       .selectAll()
-      .orderBy(Kysely.hammingDistance('embedding', [1, 1, 1]))
+      .orderBy(sql.hammingDistance('embedding', [1, 1, 1]))
       .limit(5)
       .execute();
 
@@ -140,17 +140,17 @@ describe('Kysely', () => {
   });
 
   it('should create simple text embedding', async () => {
-    const result = await Kysely.generateTextEmbedding(BAAI_BGE_BASE_EN, 'hello world').execute(db);
+    const result = await sql.generateTextEmbedding(BAAI_BGE_BASE_EN, 'hello world').execute(db);
     assert.equal(result.rows[0].text_embedding.length, 768);
   });
 
   it('should create simple image embedding', async () => {
-    const result = await Kysely.generateImageEmbedding(CLIP_VIT_B_32_VISUAL, imageUrl).execute(db);
+    const result = await sql.generateImageEmbedding(CLIP_VIT_B_32_VISUAL, imageUrl).execute(db);
     assert.equal(result.rows[0].image_embedding.length, 512);
   });
 
   it('select text embedding based on book names in the table', async () => {
-    const selectLiteral = Kysely.textEmbedding(BAAI_BGE_BASE_EN, 'name');
+    const selectLiteral = sql.textEmbedding(BAAI_BGE_BASE_EN, 'name');
     const bookEmbeddings = await db.selectFrom('books').select(['name', selectLiteral]).where('name', 'is not', null).limit(5).execute();
 
     assert.equal(bookEmbeddings.length, 2);
@@ -163,7 +163,7 @@ describe('Kysely', () => {
   });
 
   it('select image embedding based on book urls in the table', async () => {
-    const selectLiteral = Kysely.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'url');
+    const selectLiteral = sql.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'url');
     const bookEmbeddings = await db.selectFrom('books').select(['url', selectLiteral]).where('url', 'is not', null).limit(5).execute();
 
     assert.equal(bookEmbeddings.length, 2);
@@ -187,7 +187,7 @@ describe('Kysely', () => {
       .selectFrom('books')
       .selectAll()
       .where('name', 'is not', null)
-      .orderBy(Kysely.cosineDistance('embedding', Kysely.textEmbedding(BAAI_BGE_BASE_EN, 'name')), 'asc')
+      .orderBy(sql.cosineDistance('embedding', sql.textEmbedding(BAAI_BGE_BASE_EN, 'name')), 'asc')
       .limit(2)
       .execute();
 
@@ -206,7 +206,7 @@ describe('Kysely', () => {
       .selectFrom('books')
       .selectAll()
       .where('url', 'is not', null)
-      .orderBy(Kysely.l2Distance('embedding', Kysely.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'url')), 'desc')
+      .orderBy(sql.l2Distance('embedding', sql.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'url')), 'desc')
       .limit(2)
       .execute();
 
