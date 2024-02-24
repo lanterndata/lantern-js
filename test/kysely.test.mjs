@@ -164,7 +164,6 @@ describe('Kysely', () => {
 
   it('select image embedding based on book urls in the table', async () => {
     const selectLiteral = Kysely.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'url');
-
     const bookEmbeddings = await db.selectFrom('books').select(['url', selectLiteral]).where('url', 'is not', null).limit(5).execute();
 
     assert.equal(bookEmbeddings.length, 2);
