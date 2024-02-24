@@ -1,9 +1,9 @@
-import { Kysely, Sql, QueryExecutorProvider } from 'kysely';
+import { Sql } from 'kysely';
 import { TextEmbeddingModelType, ImageEmbeddingModelType } from 'lanterndata/types/_embeddings/model-types';
 
 export * from 'lanterndata/types/_common/utils/sql';
 
-export declare function extend({ Kysely, sql }: { Kysely: Kysely; sql: Sql }): void;
+export declare function extend(sql: Sql): void;
 
 declare module 'kysely' {
   interface Sql {
