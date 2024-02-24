@@ -16,6 +16,7 @@ npm install lanterndata
 Observe the guidelines for your ORM database library.
 
 - [Knex](/src/knex/README.md)
+- [Kysely](/src/kysely/README.md)
 - [Sequelize](/src/sequelize/README.md)
 - [Mikro-ORM](/src/mikro-orm/README.md)
 - [Drizzle-ORM](/src/drizzle-orm/README.md)
