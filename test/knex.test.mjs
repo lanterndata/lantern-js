@@ -31,11 +31,11 @@ describe('Knex', () => {
       connection: process.env.DATABASE_URL,
     });
 
-    knex.on('query', (queryData) => {
-      if (process.env.TEST_DEBUG) {
+    if (process.env.TEST_DEBUG) {
+      knex.on('query', (queryData) => {
         console.log(queryData);
-      }
-    });
+      });
+    }
 
     await knex.schema.createLanternExtension();
     await knex.schema.createLanternExtrasExtension();
