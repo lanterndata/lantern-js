@@ -119,7 +119,6 @@ describe('Knex', () => {
 
   it('should create simple image embedding', async () => {
     const result = await knex.generateImageEmbedding(CLIP_VIT_B_32_VISUAL, imageUrl);
-
     assert.equal(result.rows[0].image_embedding.length, 512);
   });
 
