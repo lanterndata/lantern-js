@@ -133,7 +133,7 @@ const { CLIP_VIT_B_32_VISUAL } = ImageEmbeddingModels;
 
 const bookEmbeddingsOrderd = await em
   .qb(Book, 'b1')
-  .select()
+  .select('*')
   .where({ url: { $ne: null } })
   .orderBy({ [em.l2Distance('embedding', em.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'b1.url'))]: 'DESC' })
   .limit(2)

@@ -114,10 +114,13 @@ console.log(bookImageEmbeddings);
 ## Vector Searches with embedding generation
 
 ```js
+import { desc } from 'drizzle-orm';
 import { l2Distance, imageEmbedding } from 'lanterndata/drizzle-orm';
 import { TextEmbeddingModels, ImageEmbeddingModels } from 'lanterndata/embeddings';
 
 const { CLIP_VIT_B_32_VISUAL } = ImageEmbeddingModels;
+
+// create db ...
 
 const bookEmbeddingsOrderd = await db
   .select()
