@@ -26,12 +26,12 @@ await knex.schema.createTable('books', (table) => {
   table.specificType('url', 'TEXT');
   table.specificType('name', 'TEXT');
   table.specificType('embedding', 'REAL[]');
-
-  knex.raw(`
-    CREATE INDEX book_index ON books USING hnsw(book_embedding dist_l2sq_ops)
-    WITH (M=2, ef_construction=10, ef=4, dims=3);
-  `);
 });
+
+await knex.raw(`
+  CREATE INDEX book_index ON books USING hnsw(book_embedding dist_l2sq_ops)
+  WITH (M=2, ef_construction=10, ef=4, dims=3);
+`);
 ```
 
 ## Vector Searches
