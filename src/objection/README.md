@@ -124,7 +124,7 @@ console.log(bookImageEmbeddings);
 import { l2Distance, imageEmbedding } from 'lanterndata/objection';
 import { ImageEmbeddingModels } from 'lanterndata/embeddings';
 
-const bookEmbeddingsOrderd = Book.query()
+const bookEmbeddingsOrderd = await Book.query()
   .whereNotNull('url')
   .orderBy(
     l2Distance(
