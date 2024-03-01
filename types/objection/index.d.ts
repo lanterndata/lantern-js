@@ -14,9 +14,9 @@ declare module 'knex' {
   }
 }
 
-export function textEmbedding(modelKey: TextEmbeddingModelType, column: Column): any;
-export function imageEmbedding(modelKey: ImageEmbeddingModelType, column: Column): any;
+export function textEmbedding(modelKey: TextEmbeddingModelType, column: string): any;
+export function imageEmbedding(modelKey: ImageEmbeddingModelType, column: string): any;
 
-export function l2Distance(column: Column, value: number[] | string): any;
-export function cosineDistance(column: Column, value: number[] | string): any;
-export function hammingDistance(column: Column, value: number[] | string): any;
+export function l2Distance(column: string, value: number[] | string): any;
+export function cosineDistance(column: string, value: number[] | string): any;
+export function hammingDistance(column: string, value: number[] | string): any;
