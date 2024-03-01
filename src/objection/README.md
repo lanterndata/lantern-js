@@ -1,4 +1,4 @@
-# lanterndata/knex
+# lanterndata/objection
 
 ---
 
@@ -8,7 +8,7 @@ If you've already executed this through a raw query, then skip this step.
 
 ```js
 import Knex from 'knex';
-import 'lanterndata/knex';
+import 'lanterndata/objection';
 
 const knex = Knex();
 
@@ -21,6 +21,18 @@ await knex.schema.createLanternExtrasExtension();
 ## Create the Table and add an Index
 
 ```js
+import { Model } from 'objection';
+
+const knex = Knex();
+
+Model.knex(knex);
+
+class Book extends Model {
+  static get tableName() {
+    return 'books';
+  }
+}
+
 await knex.schema.createTable('books', (table) => {
   table.increments('id');
   table.specificType('url', 'TEXT');
@@ -39,16 +51,18 @@ await knex.raw(`
 You can performe vectore search using those distance methods.
 
 ```js
-await knex('books')
-  .orderBy(knex.l2Distance('embedding', [1, 1, 1]))
+import { l2Distance, cosineDistance, hammingDistance } from 'lanterndata/objection';
+
+await Book.query()
+  .orderBy(l2Distance('embedding', [1, 1, 1]))
   .limit(5);
 
-await knex('books')
-  .orderBy(knex.cosineDistance('embedding', [1, 1, 1]))
+await Book.query()
+  .orderBy(cosineDistance('embedding', [1, 1, 1]))
   .limit(5);
 
-await knex('books')
-  .orderBy(knex.hammingDistance('embedding', [1, 1, 1]))
+await Book.query()
+  .orderBy(hammingDistance('embedding', [1, 1, 1]))
   .limit(5);
 ```
 
@@ -58,8 +72,10 @@ await knex('books')
 
 ```js
 import Knex from 'knex';
-import 'lanterndata/knex';
+import 'lanterndata/objection';
 import { TextEmbeddingModels, ImageEmbeddingModels } from 'lanterndata/embeddings';
+
+const knex = Knex();
 
 // text embedding
 const text = 'hello world';
@@ -76,12 +92,14 @@ console.log(embedding.rows[0].image_embedding);
 
 ```js
 import Knex from 'knex';
-import 'lanterndata/knex';
+import { textEmbedding, imageEmbedding } from 'lanterndata/objection';
 import { TextEmbeddingModels, ImageEmbeddingModels } from 'lanterndata/embeddings';
 
+const knex = Knex();
+
 // text embeddings
-const selectLiteral = knex.textEmbedding(TextEmbeddingModels.BAAI_BGE_BASE_EN, 'name');
-const bookTextEmbeddings = await knex('books')
+const selectLiteral = textEmbedding(TextEmbeddingModels.BAAI_BGE_BASE_EN, 'name');
+const bookTextEmbeddings = Book.query()
     .select('name')
     .select(selectLiteral)
     .whereNotNull('name');
@@ -90,8 +108,8 @@ const bookTextEmbeddings = await knex('books')
 console.log(bookTextEmbeddings);
 
 // image embeddings
-const selectLiteral = knex.imageEmbedding(ImageEmbeddingModels.BAAI_BGE_BASE_EN, 'url');
-const bookImageEmbeddings = await knex('books')
+const selectLiteral = imageEmbedding(ImageEmbeddingModels.BAAI_BGE_BASE_EN, 'url');
+const bookImageEmbeddings = Book.query()
     .select('url')
     .select(selectLiteral)
     .whereNotNull('url');
@@ -103,12 +121,15 @@ console.log(bookImageEmbeddings);
 ## Vector Searches with embedding generation
 
 ```js
-const bookEmbeddingsOrderd = await knex('books')
+import { l2Distance, imageEmbedding } from 'lanterndata/objection';
+import { ImageEmbeddingModels } from 'lanterndata/embeddings';
+
+const bookEmbeddingsOrderd = Book.query()
   .whereNotNull('url')
   .orderBy(
-    knex.l2Distance(
+    l2Distance(
       'embedding',
-      knex.imageEmbedding(ImageEmbeddingModels.CLIP_VIT_B_32_VISUAL, 'url')
+      imageEmbedding(ImageEmbeddingModels.CLIP_VIT_B_32_VISUAL, 'url')
     ),
     'desc'
   )

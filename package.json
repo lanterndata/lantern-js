@@ -50,6 +50,10 @@
       "types": "./types/drizzle-orm/index.d.ts",
       "default": "./src/drizzle-orm/drizzle-orm.js"
     },
+    "./objection": {
+      "types": "./types/objection/index.d.ts",
+      "default": "./src/objection/objection.js"
+    },
     "./embeddings": {
       "types": "./types/_embeddings/index.d.ts",
       "default": "./src/_embeddings/embeddings.js"
@@ -76,6 +80,9 @@
       "drizzle-orm": [
         "types/drizzle-orm/index.d.ts"
       ],
+      "objection": [
+        "types/objection/index.d.ts"
+      ],
       "embeddings": [
         "types/_embeddings/index.d.ts"
       ]
@@ -91,6 +98,7 @@
     "eslint-plugin-import": "^2.29.1",
     "knex": "^3.1.0",
     "kysely": "^0.27.2",
+    "objection": "^3.1.4",
     "pg": "^8.11.3",
     "postgres": "^3.4.3",
     "prettier": "3.2.5",
