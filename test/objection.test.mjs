@@ -1,8 +1,9 @@
-import 'lanterndata/knex';
 import Knex from 'knex';
-import assert from 'node:assert';
+import assert from 'assert';
 
+import { Model } from 'objection';
 import { describe, it, after } from 'node:test';
+import { l2Distance, cosineDistance, hammingDistance, textEmbedding, imageEmbedding } from 'lanterndata/objection';
 import { TextEmbeddingModels, ImageEmbeddingModels } from 'lanterndata/embeddings';
 
 import sqlQueries from './_common/sql.mjs';
@@ -12,12 +13,26 @@ import { imageUrl, newBooks, newMovies, newBooks768Dim, newBooks512Dim } from '.
 const { BAAI_BGE_BASE_EN } = TextEmbeddingModels;
 const { CLIP_VIT_B_32_VISUAL } = ImageEmbeddingModels;
 
+// Define Book model class
+class Book extends Model {
+  static get tableName() {
+    return 'books';
+  }
+}
+
+// Define Movie model class
+class Movie extends Model {
+  static get tableName() {
+    return 'movies';
+  }
+}
+
 async function dropTables(knex) {
   await knex.schema.dropTableIfExists('books');
   await knex.schema.dropTableIfExists('movies');
 }
 
-describe('Knex', () => {
+describe('Objection.js', () => {
   let knex;
 
   after(async () => {
@@ -37,6 +52,9 @@ describe('Knex', () => {
       });
     }
 
+    // Bind Objection.js to the knex instance
+    Model.knex(knex);
+
     await knex.schema.createLanternExtension();
     await knex.schema.createLanternExtrasExtension();
 
@@ -46,12 +64,12 @@ describe('Knex', () => {
   it('should create a table [REAL] with index and data', async () => {
     await knex.schema.createTable('books', (table) => {
       table.increments('id');
-      table.specificType('url', 'TEXT');
-      table.specificType('name', 'TEXT');
+      table.text('url');
+      table.text('name');
       table.specificType('embedding', 'REAL[]');
     });
 
-    await knex('books').insert(newBooks);
+    await Book.query().insert(newBooks);
 
     await knex.raw(sqlQueries.books.createIndexDef);
   });
@@ -62,16 +80,16 @@ describe('Knex', () => {
       table.specificType('embedding', 'INT[]');
     });
 
-    await knex('movies').insert(newMovies);
+    await Movie.query().insert(newMovies);
 
-    knex.schema.table('movies', (table) => {
+    await knex.schema.table('movies', (table) => {
       table.index(knex.raw('embedding dist_hamming_ops'), 'idx_embedding', 'hnsw');
     });
   });
 
   it('should find using L2 distance', async () => {
-    const books = await knex('books')
-      .orderBy(knex.l2Distance('embedding', [1, 1, 1]))
+    const books = await Book.query()
+      .orderBy(l2Distance('embedding', [1, 1, 1]))
       .limit(5);
 
     assert.deepStrictEqual(
@@ -85,8 +103,8 @@ describe('Knex', () => {
   });
 
   it('should find using Cosine distance', async () => {
-    const books = await knex('books')
-      .orderBy(knex.cosineDistance('embedding', [1, 1, 1]))
+    const books = await Book.query()
+      .orderBy(cosineDistance('embedding', [1, 1, 1]))
       .limit(5);
 
     assert.deepStrictEqual(
@@ -96,8 +114,8 @@ describe('Knex', () => {
   });
 
   it('should find using Hamming distance', async () => {
-    const movies = await knex('movies')
-      .orderBy(knex.hammingDistance('embedding', [1, 1, 1]))
+    const movies = await Movie.query()
+      .orderBy(hammingDistance('embedding', [1, 1, 1]))
       .limit(5);
 
     assert.deepStrictEqual(
@@ -107,13 +125,14 @@ describe('Knex', () => {
   });
 
   it('should fail because of wrong embedding dimensions', async () => {
-    await knex('books')
+    await Book.query()
       .insert({ embedding: [1] })
       .catch((e) => assert.equal(e.message.includes('Wrong number of dimensions: 1 instead of 3 expected'), true));
   });
 
   it('should create simple text embedding', async () => {
-    const result = await knex.generateTextEmbedding(BAAI_BGE_BASE_EN, 'hello world');
+    const bookKnex = Book.knex();
+    const result = await bookKnex.generateTextEmbedding(BAAI_BGE_BASE_EN, 'hello world');
     assert.equal(result.rows[0].text_embedding.length, 768);
   });
 
@@ -123,8 +142,8 @@ describe('Knex', () => {
   });
 
   it('select text embedding based on book names in the table', async () => {
-    const selectLiteral = knex.textEmbedding(BAAI_BGE_BASE_EN, 'name');
-    const bookEmbeddings = await knex('books').select('name').select(selectLiteral).whereNotNull('name');
+    const selectLiteral = textEmbedding(BAAI_BGE_BASE_EN, 'name');
+    const bookEmbeddings = await Book.query().select('name').select(selectLiteral).whereNotNull('name');
 
     assert.equal(bookEmbeddings.length, 2);
 
@@ -136,8 +155,8 @@ describe('Knex', () => {
   });
 
   it('select image embedding based on book urls in the table', async () => {
-    const selectLiteral = knex.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'url');
-    const bookEmbeddings = await knex('books').select('url').select(selectLiteral).whereNotNull('url');
+    const selectLiteral = imageEmbedding(CLIP_VIT_B_32_VISUAL, 'url');
+    const bookEmbeddings = await Book.query().select('url').select(selectLiteral).whereNotNull('url');
 
     assert.equal(bookEmbeddings.length, 2);
 
@@ -149,36 +168,36 @@ describe('Knex', () => {
   });
 
   it('should find using Cosine distance and do text_embedding generation', async () => {
-    await knex('books').delete();
+    await Book.query().delete();
 
     await knex.raw(sqlQueries.books.dropIndex);
     await knex.raw(sqlQueries.books.createIndex768);
 
-    await knex('books').insert(newBooks768Dim);
+    await Book.query().insert(newBooks768Dim);
 
-    const bookEmbeddingsOrderd = await knex('books')
+    const bookEmbeddingsOrdered = await Book.query()
       .whereNotNull('name')
-      .orderBy(knex.cosineDistance('embedding', knex.textEmbedding(BAAI_BGE_BASE_EN, 'name')), 'asc')
+      .orderBy(cosineDistance('embedding', textEmbedding(BAAI_BGE_BASE_EN, 'name')), 'asc')
       .limit(2);
 
-    assert.equal(bookEmbeddingsOrderd.length, 2);
+    assert.equal(bookEmbeddingsOrdered.length, 2);
   });
 
   it('should find using L2 distance and do image_embedding generation', async () => {
-    await knex('books').delete();
+    await Book.query().delete();
 
     await knex.raw(sqlQueries.books.dropIndex);
     await knex.raw(sqlQueries.books.createIndex512);
 
-    await knex('books').insert(newBooks512Dim);
+    await Book.query().insert(newBooks512Dim);
 
-    const bookEmbeddingsOrderd = await knex('books')
+    const bookEmbeddingsOrdered = await Book.query()
       .whereNotNull('url')
-      .orderBy(knex.l2Distance('embedding', knex.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'url')), 'desc')
+      .orderBy(l2Distance('embedding', imageEmbedding(CLIP_VIT_B_32_VISUAL, 'url')), 'desc')
       .limit(2);
 
-    assert.equal(bookEmbeddingsOrderd.length, 2);
-    assert.equal(bookEmbeddingsOrderd[0].name, 'Harry Potter');
-    assert.equal(bookEmbeddingsOrderd[1].name, 'Greek Myths');
+    assert.equal(bookEmbeddingsOrdered.length, 2);
+    assert.equal(bookEmbeddingsOrdered[0].name, 'Harry Potter');
+    assert.equal(bookEmbeddingsOrdered[1].name, 'Greek Myths');
   });
 });
