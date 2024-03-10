@@ -1,6 +1,6 @@
 {
   "name": "lanterndata",
-  "version": "0.0.21",
+  "version": "0.0.22",
   "description": "JavaScript/Typescript ORMs for Lantern Vector Database",
   "main": "index.js",
   "scripts": {
@@ -42,6 +42,10 @@
       "types": "./types/sequelize/index.d.ts",
       "default": "./src/sequelize/sequelize.js"
     },
+    "./typeorm": {
+      "types": "./types/typeorm/index.d.ts",
+      "default": "./src/typeorm/typeorm.js"
+    },
     "./mikro-orm": {
       "types": "./types/mikro-orm/index.d.ts",
       "default": "./src/mikro-orm/mikro-orm.js"
@@ -74,6 +78,9 @@
       "sequelize": [
         "types/sequelize/index.d.ts"
       ],
+      "typeorm": [
+        "types/typeorm/index.d.ts"
+      ],
       "mikro-orm": [
         "types/mikro-orm/index.d.ts"
       ],
@@ -102,7 +109,8 @@
     "pg": "^8.11.3",
     "postgres": "^3.4.3",
     "prettier": "3.2.5",
-    "sequelize": "^6.36.0"
+    "sequelize": "^6.36.0",
+    "typeorm": "^0.3.20"
   },
   "bugs": {
     "url": "https://github.com/lanterndata/lantern-js/issues"

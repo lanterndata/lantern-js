@@ -15,7 +15,7 @@ jobs:
         node-version: ['20.x']
     services:
       postgres:
-        image: lanterndata/lantern-suite:latest-pg15
+        image: lanterndata/lantern-suite:pg15-v7
         env:
           POSTGRES_PASSWORD: postgres
         ports:

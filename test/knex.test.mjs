@@ -65,7 +65,7 @@ describe('Knex', () => {
     await knex('movies').insert(newMovies);
 
     knex.schema.table('movies', (table) => {
-      table.index(knex.raw('embedding dist_hamming_ops'), 'idx_embedding', 'hnsw');
+      table.index(knex.raw('embedding dist_hamming_ops'), 'idx_embedding', 'lantern_hnsw');
     });
   });
 

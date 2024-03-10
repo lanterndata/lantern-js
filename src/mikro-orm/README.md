@@ -37,7 +37,7 @@ const Book = new EntitySchema({
   },
 });
 
-await em.execute('CREATE INDEX book_index ON books USING hnsw(embedding dist_l2sq_ops');
+await em.execute('CREATE INDEX book_index ON books USING lantern_hnsw(embedding dist_l2sq_ops');
 
 const books = booksToInsert.map((book) =>
   em.create(Book, {
