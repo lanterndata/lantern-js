@@ -18,6 +18,7 @@ Observe the guidelines for your ORM database library.
 - [Knex](/src/knex/README.md)
 - [Kysely](/src/kysely/README.md)
 - [Sequelize](/src/sequelize/README.md)
+- [TypeORM](/src/typeorm/README.md)
 - [Mikro-ORM](/src/mikro-orm/README.md)
 - [Objection.js](/src/objection/README.md)
 - [Drizzle-ORM](/src/drizzle-orm/README.md)
