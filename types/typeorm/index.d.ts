@@ -5,8 +5,8 @@ export * from '../_common/utils/sql';
 export function createLanternExtension(): string;
 export function createLanternExtrasExtension(): string;
 
-export function generateTextEmbedding(modelKey: TextEmbeddingModelType, value: string): string;
-export function generateImageEmbedding(modelKey: ImageEmbeddingModelType, value: string): string;
+export function generateTextEmbedding(modelKey: TextEmbeddingModelType, value: string): any;
+export function generateImageEmbedding(modelKey: ImageEmbeddingModelType, value: string): any;
 
 export function textEmbedding(modelKey: TextEmbeddingModelType, column: string): string;
 export function imageEmbedding(modelKey: ImageEmbeddingModelType, column: string): string;
