@@ -29,7 +29,7 @@ await knex.schema.createTable('books', (table) => {
 });
 
 await knex.raw(`
-  CREATE INDEX book_index ON books USING hnsw(book_embedding dist_l2sq_ops)
+  CREATE INDEX book_index ON books USING lantern_hnsw(book_embedding dist_l2sq_ops)
   WITH (M=2, ef_construction=10, ef=4, dims=3);
 `);
 ```
@@ -96,7 +96,7 @@ const bookImageEmbeddings = await knex('books')
     .select(selectLiteral)
     .whereNotNull('url');
 
-// [{ url: "...", text_embedding: [...] }]
+// [{ url: "...", image_embedding: [...] }]
 console.log(bookImageEmbeddings);
 ```
 

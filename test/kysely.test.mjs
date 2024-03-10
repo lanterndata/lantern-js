@@ -80,7 +80,7 @@ describe('Kysely', () => {
     await db.schema
       .createIndex('movie_index')
       .on('movies')
-      .using('hnsw')
+      .using('lantern_hnsw')
       .expression(sql`embedding dist_hamming_ops`)
       .execute();
   });

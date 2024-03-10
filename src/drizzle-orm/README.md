@@ -30,7 +30,7 @@ const Book = pgTable('books', {
   embedding: real('embedding').array(),
 });
 
-await client`CREATE INDEX book_index ON books USING hnsw(embedding dist_l2sq_ops)`;
+await client`CREATE INDEX book_index ON books USING lantern_hnsw(embedding dist_l2sq_ops)`;
 ```
 
 ## Vector Searches
