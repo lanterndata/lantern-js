@@ -96,7 +96,7 @@ const bookImageEmbeddings = await knex('books')
     .select(selectLiteral)
     .whereNotNull('url');
 
-// [{ url: "...", text_embedding: [...] }]
+// [{ url: "...", image_embedding: [...] }]
 console.log(bookImageEmbeddings);
 ```
 

@@ -2,11 +2,7 @@ import assert from 'node:assert';
 
 import { describe, it, after, before } from 'node:test';
 import { DataSource, EntitySchema } from 'typeorm';
-import {
-  createLanternExtension, createLanternExtrasExtension,
-  l2Distance, hammingDistance, cosineDistance,
-  generateTextEmbedding, generateImageEmbedding
-} from 'lanterndata/typeorm';
+import { createLanternExtension, createLanternExtrasExtension, l2Distance, hammingDistance, cosineDistance, textEmbedding, imageEmbedding, generateTextEmbedding, generateImageEmbedding } from 'lanterndata/typeorm';
 import { TextEmbeddingModels, ImageEmbeddingModels } from 'lanterndata/embeddings';
 
 import sqlQueries from './_common/sql.mjs';
@@ -22,7 +18,11 @@ async function dropTables(AppDataSource) {
 }
 
 describe('Typeorm', () => {
-  let AppDataSource; let Book; let Movie; let bookRepository; let movieRepository;
+  let AppDataSource;
+  let Book;
+  let Movie;
+  let bookRepository;
+  let movieRepository;
 
   before(() => {
     Book = new EntitySchema({
@@ -32,17 +32,17 @@ describe('Typeorm', () => {
         id: {
           type: 'int',
           primary: true,
-          generated: true
+          generated: true,
         },
         name: { type: 'text' },
         url: { type: 'text' },
         embedding: {
           type: 'real',
           array: true,
-        }
-      }
+        },
+      },
     });
-  
+
     Movie = new EntitySchema({
       name: 'Movie',
       tableName: 'movies',
@@ -50,13 +50,13 @@ describe('Typeorm', () => {
         id: {
           type: 'int',
           primary: true,
-          generated: true
+          generated: true,
         },
         embedding: {
           type: 'int',
           array: true,
-        }
-      }
+        },
+      },
     });
   });
 
@@ -70,7 +70,7 @@ describe('Typeorm', () => {
       type: 'postgres',
       url: process.env.DATABASE_URL,
       logging: !!process.env.TEST_DEBUG,
-      entities: [Book, Movie]
+      entities: [Book, Movie],
     });
 
     await AppDataSource.initialize();
@@ -107,7 +107,7 @@ describe('Typeorm', () => {
 
   it('should find using L2 distance', async () => {
     const books = await bookRepository
-      .createQueryBuilder('book')
+      .createQueryBuilder('books')
       .orderBy(l2Distance('embedding', ':myEmbedding'))
       .setParameters({ myEmbedding: [1, 1, 1] })
       .limit(5)
@@ -125,7 +125,7 @@ describe('Typeorm', () => {
 
   it('should find using Cosine distance', async () => {
     const books = await bookRepository
-      .createQueryBuilder('book')
+      .createQueryBuilder('books')
       .orderBy(cosineDistance('embedding', ':myEmbedding'))
       .setParameters({ myEmbedding: [1, 1, 1] })
       .limit(5)
@@ -152,77 +152,86 @@ describe('Typeorm', () => {
   });
 
   it('should fail because of wrong embedding dimensions', async () => {
-    await bookRepository.save({ embedding: [1] })
-      .catch((e) => assert.equal(e.message.includes('Wrong number of dimensions: 1 instead of 3 expected'), true));
+    await bookRepository.save({ embedding: [1] }).catch((e) => assert.equal(e.message.includes('Wrong number of dimensions: 1 instead of 3 expected'), true));
   });
 
   it('should create simple text embedding', async () => {
-    const result = await AppDataSource.query(generateTextEmbedding(BAAI_BGE_BASE_EN), [ 'hello world' ]);
+    const result = await AppDataSource.query(generateTextEmbedding(BAAI_BGE_BASE_EN), ['hello world']);
     assert.equal(result[0].text_embedding.length, 768);
   });
 
   it('should create simple image embedding', async () => {
-    const result = await AppDataSource.query(generateImageEmbedding(CLIP_VIT_B_32_VISUAL), [ imageUrl ]);
+    const result = await AppDataSource.query(generateImageEmbedding(CLIP_VIT_B_32_VISUAL), [imageUrl]);
     assert.equal(result[0].image_embedding.length, 512);
   });
 
-  // it('select text embedding based on book names in the table', async () => {
-  //   const selectLiteral = knex.textEmbedding(BAAI_BGE_BASE_EN, 'name');
-  //   const bookEmbeddings = await knex('books').select('name').select(selectLiteral).whereNotNull('name');
+  it('select text embedding based on book names in the table', async () => {
+    const bookEmbeddings = await bookRepository.createQueryBuilder('books').select('name').addSelect(textEmbedding(BAAI_BGE_BASE_EN, 'name')).where('name IS NOT NULL').getRawMany();
 
-  //   assert.equal(bookEmbeddings.length, 2);
+    assert.equal(bookEmbeddings.length, 2);
 
-  //   bookEmbeddings.forEach((book) => {
-  //     assert(book.name);
-  //     assert(Array.isArray(book.text_embedding));
-  //     assert(book.text_embedding.length > 0);
-  //   });
-  // });
+    bookEmbeddings.forEach((book) => {
+      assert(book.name);
+      assert(Array.isArray(book.text_embedding));
+      assert(book.text_embedding.length > 0);
+    });
+  });
 
-  // it('select image embedding based on book urls in the table', async () => {
-  //   const selectLiteral = knex.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'url');
-  //   const bookEmbeddings = await knex('books').select('url').select(selectLiteral).whereNotNull('url');
+  it('select image embedding based on book urls in the table', async () => {
+    const bookEmbeddings = await bookRepository.createQueryBuilder('books').select('url').addSelect(imageEmbedding(CLIP_VIT_B_32_VISUAL, 'url')).where('url IS NOT NULL').getRawMany();
 
-  //   assert.equal(bookEmbeddings.length, 2);
+    assert.equal(bookEmbeddings.length, 2);
 
-  //   bookEmbeddings.forEach((book) => {
-  //     assert(book.url);
-  //     assert(Array.isArray(book.image_embedding));
-  //     assert(book.image_embedding.length > 0);
-  //   });
-  // });
+    bookEmbeddings.forEach((book) => {
+      assert(book.url);
+      assert(Array.isArray(book.image_embedding));
+      assert(book.image_embedding.length > 0);
+    });
+  });
 
-  // it('should find using Cosine distance and do text_embedding generation', async () => {
-  //   await knex('books').delete();
+  it('should find using Cosine distance and do text_embedding generation', async () => {
+    await bookRepository.delete({});
 
-  //   await knex.raw(sqlQueries.books.dropIndex);
-  //   await knex.raw(sqlQueries.books.createIndex768);
+    await AppDataSource.query(sqlQueries.books.dropIndex);
+    await AppDataSource.query(sqlQueries.books.createIndex768);
 
-  //   await knex('books').insert(newBooks768Dim);
+    bookRepository = AppDataSource.getRepository(Book);
 
-  //   const bookEmbeddingsOrderd = await knex('books')
-  //     .whereNotNull('name')
-  //     .orderBy(knex.cosineDistance('embedding', knex.textEmbedding(BAAI_BGE_BASE_EN, 'name')), 'asc')
-  //     .limit(2);
+    for (const bookItem of newBooks768Dim) {
+      await bookRepository.save(bookItem);
+    }
 
-  //   assert.equal(bookEmbeddingsOrderd.length, 2);
-  // });
+    const bookEmbeddingsOrderd = await bookRepository
+      .createQueryBuilder('books')
+      .orderBy(cosineDistance('embedding', textEmbedding(BAAI_BGE_BASE_EN, 'name')))
+      .where('name IS NOT NULL')
+      .limit(2)
+      .getMany();
 
-  // it('should find using L2 distance and do image_embedding generation', async () => {
-  //   await knex('books').delete();
+    assert.equal(bookEmbeddingsOrderd.length, 2);
+  });
 
-  //   await knex.raw(sqlQueries.books.dropIndex);
-  //   await knex.raw(sqlQueries.books.createIndex512);
+  it('should find using L2 distance and do image_embedding generation', async () => {
+    await bookRepository.delete({});
 
-  //   await knex('books').insert(newBooks512Dim);
+    await AppDataSource.query(sqlQueries.books.dropIndex);
+    await AppDataSource.query(sqlQueries.books.createIndex512);
 
-  //   const bookEmbeddingsOrderd = await knex('books')
-  //     .whereNotNull('url')
-  //     .orderBy(knex.l2Distance('embedding', knex.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'url')), 'desc')
-  //     .limit(2);
+    bookRepository = AppDataSource.getRepository(Book);
 
-  //   assert.equal(bookEmbeddingsOrderd.length, 2);
-  //   assert.equal(bookEmbeddingsOrderd[0].name, 'Harry Potter');
-  //   assert.equal(bookEmbeddingsOrderd[1].name, 'Greek Myths');
-  // });
+    for (const bookItem of newBooks512Dim) {
+      await bookRepository.save(bookItem);
+    }
+
+    const bookEmbeddingsOrderd = await bookRepository
+      .createQueryBuilder('books')
+      .orderBy(cosineDistance('embedding', imageEmbedding(CLIP_VIT_B_32_VISUAL, 'url')), 'DESC')
+      .where('url IS NOT NULL')
+      .limit(2)
+      .getMany();
+
+    assert.equal(bookEmbeddingsOrderd.length, 2);
+    assert.equal(bookEmbeddingsOrderd[0].name, 'Harry Potter');
+    assert.equal(bookEmbeddingsOrderd[1].name, 'Greek Myths');
+  });
 });

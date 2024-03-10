@@ -2,7 +2,7 @@ const { fromSql, toSql } = require('../_common/utils/sql');
 const { getTextEmbeddingModelName, getImageEmbeddingModelName } = require('../_embeddings/models');
 
 function distance(op, column, param) {
-  return `${column} ${op} ${param}`
+  return `${column} ${op} ${param}`;
 }
 
 // extension support related methods
@@ -18,6 +18,17 @@ exports.generateTextEmbedding = function (modelKey) {
 exports.generateImageEmbedding = function (modelKey) {
   const modelName = getImageEmbeddingModelName(modelKey);
   return `SELECT image_embedding('${modelName}', $1);`;
+};
+
+// embedding literals
+exports.textEmbedding = function (modelKey, column) {
+  const modelName = getTextEmbeddingModelName(modelKey);
+  return `text_embedding('${modelName}', "${column}")`;
+};
+
+exports.imageEmbedding = function (modelKey, column) {
+  const modelName = getImageEmbeddingModelName(modelKey);
+  return `image_embedding('${modelName}', "${column}")`;
 };
 
 // distance search literals

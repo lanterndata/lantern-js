@@ -117,7 +117,7 @@ const bookEmbeddings = await db
     .limit(5)
     .execute();
 
-// [{ url: "...", text_embedding: [...] }]
+// [{ url: "...", image_embedding: [...] }]
 console.log(bookImageEmbeddings);
 ```
 

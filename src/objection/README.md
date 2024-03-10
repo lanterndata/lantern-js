@@ -114,7 +114,7 @@ const bookImageEmbeddings = Book.query()
     .select(selectLiteral)
     .whereNotNull('url');
 
-// [{ url: "...", text_embedding: [...] }]
+// [{ url: "...", image_embedding: [...] }]
 console.log(bookImageEmbeddings);
 ```
 
