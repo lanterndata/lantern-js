@@ -8,7 +8,7 @@ import { TextEmbeddingModels, ImageEmbeddingModels } from 'lanterndata/embedding
 
 import sqlQueries from './_common/sql.mjs';
 
-import { imageUrl, newBooks, newMovies, newBooks768Dim, newBooks512Dim } from './_fixtures/fixtures.mjs';
+import { imageUrl, exampleText, newBooks, newMovies, newBooks768Dim, newBooks512Dim } from './_fixtures/fixtures.mjs';
 
 const { BAAI_BGE_BASE_EN } = TextEmbeddingModels;
 const { CLIP_VIT_B_32_VISUAL } = ImageEmbeddingModels;
@@ -140,39 +140,13 @@ describe('Kysely', () => {
   });
 
   it('should create simple text embedding', async () => {
-    const result = await sql.generateTextEmbedding(BAAI_BGE_BASE_EN, 'hello world').execute(db);
+    const result = await sql.generateTextEmbedding(BAAI_BGE_BASE_EN, exampleText).execute(db);
     assert.equal(result.rows[0].text_embedding.length, 768);
   });
 
   it('should create simple image embedding', async () => {
     const result = await sql.generateImageEmbedding(CLIP_VIT_B_32_VISUAL, imageUrl).execute(db);
     assert.equal(result.rows[0].image_embedding.length, 512);
-  });
-
-  it('select text embedding based on book names in the table', async () => {
-    const selectLiteral = sql.textEmbedding(BAAI_BGE_BASE_EN, 'name');
-    const bookEmbeddings = await db.selectFrom('books').select(['name', selectLiteral]).where('name', 'is not', null).limit(5).execute();
-
-    assert.equal(bookEmbeddings.length, 2);
-
-    bookEmbeddings.forEach((book) => {
-      assert(book.name);
-      assert(Array.isArray(book.text_embedding));
-      assert(book.text_embedding.length > 0);
-    });
-  });
-
-  it('select image embedding based on book urls in the table', async () => {
-    const selectLiteral = sql.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'url');
-    const bookEmbeddings = await db.selectFrom('books').select(['url', selectLiteral]).where('url', 'is not', null).limit(5).execute();
-
-    assert.equal(bookEmbeddings.length, 2);
-
-    bookEmbeddings.forEach((book) => {
-      assert(book.url);
-      assert(Array.isArray(book.image_embedding));
-      assert(book.image_embedding.length > 0);
-    });
   });
 
   it('should find using Cosine distance and do text_embedding generation', async () => {
@@ -187,7 +161,7 @@ describe('Kysely', () => {
       .selectFrom('books')
       .selectAll()
       .where('name', 'is not', null)
-      .orderBy(sql.cosineDistance('embedding', sql.textEmbedding(BAAI_BGE_BASE_EN, 'name')), 'asc')
+      .orderBy(sql.cosineDistance('embedding', sql.textEmbedding(BAAI_BGE_BASE_EN, exampleText)), 'asc')
       .limit(2)
       .execute();
 
@@ -206,7 +180,7 @@ describe('Kysely', () => {
       .selectFrom('books')
       .selectAll()
       .where('url', 'is not', null)
-      .orderBy(sql.l2Distance('embedding', sql.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'url')), 'desc')
+      .orderBy(sql.l2Distance('embedding', sql.imageEmbedding(CLIP_VIT_B_32_VISUAL, imageUrl)), 'desc')
       .limit(2)
       .execute();
 

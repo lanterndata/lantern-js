@@ -59,9 +59,7 @@ await db
   .limit(5);
 ```
 
-## Generate Embeddings
-
-### Static generation
+## Embedding generation
 
 ```js
 import { TextEmbeddingModels, ImageEmbeddingModels } from 'lanterndata/embeddings';
@@ -78,62 +76,40 @@ const result = await db.execute(generateImageEmbedding(ImageEmbeddingModels.CLIP
 console.log(result[0].image_embedding);
 ```
 
-### Dynamic generation
-
-```js
-import { textEmbedding, imageEmbedding } from 'lanterndata/drizzle-orm';
-import { TextEmbeddingModels, ImageEmbeddingModels } from 'lanterndata/embeddings';
-
-// text embeddings
-const bookTextEmbeddings = await db
-  .select({
-    name: Book.name,
-    text_embedding: textEmbedding(TextEmbeddingModels.BAAI_BGE_BASE_EN, Book.name),
-  })
-  .from(Book)
-  .where(isNotNull(Book.name))
-  .limit(5);
-
-// [{ name: "...", text_embedding: [...] }]
-console.log(bookTextEmbeddings);
-
-// image embeddings
-const bookImageEmbeddings = await db
-  .select({
-    url: Book.url,
-    image_embedding: imageEmbedding(ImageEmbeddingModels.CLIP_VIT_B_32_VISUAL, Book.url),
-  })
-  .from(Book)
-  .where(isNotNull(Book.name))
-  .limit(5);
-
-// [{ url: "...", image_embedding: [...] }]
-console.log(bookImageEmbeddings);
-```
-
-## Vector Searches with embedding generation
+## Vector searche with embedding generation
 
 ```js
 import { desc } from 'drizzle-orm';
-import { l2Distance, imageEmbedding } from 'lanterndata/drizzle-orm';
+import { l2Distance, cosineDistance, textEmbedding, imageEmbedding } from 'lanterndata/drizzle-orm';
 import { TextEmbeddingModels, ImageEmbeddingModels } from 'lanterndata/embeddings';
 
+const { BAAI_BGE_BASE_EN } = TextEmbeddingModels;
 const { CLIP_VIT_B_32_VISUAL } = ImageEmbeddingModels;
 
 // create db ...
 
-const bookEmbeddingsOrderd = await db
+const text = 'hello worls';
+const imageUrl = 'https://lantern.dev/images/home/footer.png';
+
+// distance search with text embedding generation
+db
   .select()
   .from(Book)
-  .orderBy(desc(l2Distance(Book.embedding, imageEmbedding(CLIP_VIT_B_32_VISUAL, Book.url))))
+  .orderBy(desc(cosineDistance(Book.embedding, textEmbedding(BAAI_BGE_BASE_EN, text))))
+  .limit(2);
+
+// distance search with image embedding generation
+db
+  .select()
+  .from(Book)
+  .orderBy(desc(l2Distance(Book.embedding, imageEmbedding(CLIP_VIT_B_32_VISUAL, imageUrl))))
   .limit(2);
 ```
 
-Corresponding SQL code:
+Corresponding SQL code (example):
 
 ```sql
 SELECT * FROM "books"
-WHERE "url" IS NOT NULL
-ORDER BY "embedding" <-> image_embedding('clip/ViT-B-32-visual', "url") DESC
+ORDER BY "embedding" <-> image_embedding('clip/ViT-B-32-visual', "...") DESC
 LIMIT 2;
 ```

@@ -74,12 +74,18 @@ await em
   .getResult();
 ```
 
-## Generate Embeddings
-
-### Static generation
+## Embedding generation
 
 ```js
+import { MikroORM } from '@mikro-orm/postgresql';
+import { extend } from 'lanterndata/mikro-orm';
+
 import { TextEmbeddingModels, ImageEmbeddingModels } from 'lanterndata/embeddings';
+
+const orm = await MikroORM.init({});
+const em = orm.em.fork();
+
+extend(em);
 
 const { BAAI_BGE_BASE_EN } = TextEmbeddingModels;
 const { CLIP_VIT_B_32_VISUAL } = ImageEmbeddingModels;
@@ -95,56 +101,46 @@ const result = await em.generateImageEmbedding(CLIP_VIT_B_32_VISUAL, imageUrl);
 console.log(result[0].image_embedding);
 ```
 
-### Dynamic generation
+## Vector searche with embedding generation
 
 ```js
+import { MikroORM } from '@mikro-orm/postgresql';
+import { extend } from 'lanterndata/mikro-orm';
+
 import { TextEmbeddingModels, ImageEmbeddingModels } from 'lanterndata/embeddings';
 
-// text embeddings
-const bookTextEmbeddings = await em
-  .qb(Book, 'b1')
-  .select(['name', em.textEmbedding(TextEmbeddingModels.BAAI_BGE_BASE_EN, 'b1.name')])
-  .where({ name: { $ne: null } })
-  .limit(5)
-  .execute('all');
+const orm = await MikroORM.init({});
+const em = orm.em.fork();
 
-// [{ name: "...", text_embedding: [...] }]
-console.log(bookTextEmbeddings);
+extend(em);
 
-// image embeddings
-const bookImageEmbeddings = await em
-  .qb(Book, 'b1')
-  .select(['url', em.imageEmbedding(ImageEmbeddingModels.CLIP_VIT_B_32_VISUAL, 'b1.url')])
-  .where({ url: { $ne: null } })
-  .limit(5)
-  .execute('all');
-
-
-// [{ url: "...", image_embedding: [...] }]
-console.log(bookImageEmbeddings);
-```
-
-## Vector Searches with embedding generation
-
-```js
-import { TextEmbeddingModels, ImageEmbeddingModels } from 'lanterndata/embeddings';
-
+const { BAAI_BGE_BASE_EN } = TextEmbeddingModels;
 const { CLIP_VIT_B_32_VISUAL } = ImageEmbeddingModels;
 
-const bookEmbeddingsOrderd = await em
-  .qb(Book, 'b1')
+const text = 'hello worls';
+const imageUrl = 'https://lantern.dev/images/home/footer.png';
+
+// distance search with text embedding generation
+await em
+  .qb(Book)
   .select('*')
-  .where({ url: { $ne: null } })
-  .orderBy({ [em.l2Distance('embedding', em.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'b1.url'))]: 'DESC' })
+  .orderBy({ [em.cosineDistance('embedding', em.textEmbedding(BAAI_BGE_BASE_EN, text))]: 'DESC' })
+  .limit(2)
+  .execute('all');
+
+// distance search with image embedding generation
+await em
+  .qb(Book)
+  .select('*')
+  .orderBy({ [em.l2Distance('embedding', em.imageEmbedding(CLIP_VIT_B_32_VISUAL, imageUrl))]: 'DESC' })
   .limit(2)
   .execute('all');
 ```
 
-Corresponding SQL code:
+Corresponding SQL code (example):
 
 ```sql
 SELECT * FROM "books"
-WHERE "url" IS NOT NULL
-ORDER BY "embedding" <-> image_embedding('clip/ViT-B-32-visual', "url") DESC
+ORDER BY "embedding" <-> image_embedding('clip/ViT-B-32-visual', "...") DESC
 LIMIT 2;
 ```

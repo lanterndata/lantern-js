@@ -52,13 +52,12 @@ await knex('books')
   .limit(5);
 ```
 
-## Generate Embeddings
-
-### Static generation
+## Embedding generation
 
 ```js
 import Knex from 'knex';
 import 'lanterndata/knex';
+
 import { TextEmbeddingModels, ImageEmbeddingModels } from 'lanterndata/embeddings';
 
 // text embedding
@@ -72,54 +71,47 @@ const embedding = await knex.generateImageEmbedding(ImageEmbeddingModels.CLIP_VI
 console.log(embedding.rows[0].image_embedding);
 ```
 
-### Dynamic generation
+## Vector searche with embedding generation
 
 ```js
 import Knex from 'knex';
 import 'lanterndata/knex';
+
 import { TextEmbeddingModels, ImageEmbeddingModels } from 'lanterndata/embeddings';
 
-// text embeddings
-const selectLiteral = knex.textEmbedding(TextEmbeddingModels.BAAI_BGE_BASE_EN, 'name');
-const bookTextEmbeddings = await knex('books')
-    .select('name')
-    .select(selectLiteral)
-    .whereNotNull('name');
+const { BAAI_BGE_BASE_EN } = TextEmbeddingModels;
+const { CLIP_VIT_B_32_VISUAL } = ImageEmbeddingModels;
 
-// [{ name: "...", text_embedding: [...] }]
-console.log(bookTextEmbeddings);
+const text = 'hello worls';
+const imageUrl = 'https://lantern.dev/images/home/footer.png';
 
-// image embeddings
-const selectLiteral = knex.imageEmbedding(ImageEmbeddingModels.BAAI_BGE_BASE_EN, 'url');
-const bookImageEmbeddings = await knex('books')
-    .select('url')
-    .select(selectLiteral)
-    .whereNotNull('url');
+// distance search with text embedding generation
+await knex('books')
+  .orderBy(
+    knex.cosineDistance(
+      'embedding',
+      knex.textEmbedding(BAAI_BGE_BASE_EN, text)
+    ),
+    'desc'
+  )
+  .limit(2);
 
-// [{ url: "...", image_embedding: [...] }]
-console.log(bookImageEmbeddings);
-```
-
-## Vector Searches with embedding generation
-
-```js
-const bookEmbeddingsOrderd = await knex('books')
-  .whereNotNull('url')
+// distance search with image embedding generation
+await knex('books')
   .orderBy(
     knex.l2Distance(
       'embedding',
-      knex.imageEmbedding(ImageEmbeddingModels.CLIP_VIT_B_32_VISUAL, 'url')
+      knex.imageEmbedding(CLIP_VIT_B_32_VISUAL, imageUrl)
     ),
     'desc'
   )
   .limit(2);
 ```
 
-Corresponding SQL code:
+Corresponding SQL code (example):
 
 ```sql
 SELECT * FROM "books"
-WHERE "url" IS NOT NULL
-ORDER BY "embedding" <-> image_embedding('clip/ViT-B-32-visual', "url") DESC
+ORDER BY "embedding" <-> image_embedding('clip/ViT-B-32-visual', "...") DESC
 LIMIT 2;
 ```

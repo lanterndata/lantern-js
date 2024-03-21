@@ -1,11 +1,6 @@
 const { fromSql, toSql } = require('../_common/utils/sql');
 const { getTextEmbeddingModelName, getImageEmbeddingModelName } = require('../_embeddings/models');
 
-function embedding(methodName, modelName, column, sequelize) {
-  const quotedColumn = sequelize.dialect.queryGenerator.quoteIdentifier(column);
-  return sequelize.literal(`${methodName}('${modelName}', ${quotedColumn})`);
-}
-
 function distance(op, column, value, sequelize) {
   const quotedColumn = sequelize.dialect.queryGenerator.quoteIdentifier(column);
   const escapedValue = sequelize.escape(toSql(value));
@@ -42,14 +37,14 @@ function extend(sequelize) {
   };
 
   // embedding literals
-  sequelize.textEmbedding = function (modelKey, column) {
+  sequelize.textEmbedding = function (modelKey, paramName) {
     const modelName = getTextEmbeddingModelName(modelKey);
-    return embedding('text_embedding', modelName, column, this);
+    return sequelize.literal(`text_embedding('${modelName}', :${paramName})`);
   };
 
-  sequelize.imageEmbedding = function (modelKey, column) {
+  sequelize.imageEmbedding = function (modelKey, paramName) {
     const modelName = getImageEmbeddingModelName(modelKey);
-    return embedding('image_embedding', modelName, column, this);
+    return sequelize.literal(`image_embedding('${modelName}', :${paramName})`);
   };
 
   // distance search literals
