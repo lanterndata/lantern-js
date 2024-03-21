@@ -140,11 +140,10 @@ await bookRepository
   .getMany();
 ```
 
-Corresponding SQL code:
+Corresponding SQL code (example):
 
 ```sql
 SELECT * FROM "books"
-WHERE "url" IS NOT NULL
 ORDER BY "embedding" <-> image_embedding('clip/ViT-B-32-visual', "...") DESC
 LIMIT 2;
 ```
