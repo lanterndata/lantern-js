@@ -24,14 +24,14 @@ exports.generateImageEmbedding = function (modelKey, value) {
 };
 
 // embedding literals
-exports.textEmbedding = function (modelKey, column) {
+exports.textEmbedding = function (modelKey, text) {
   const modelName = getTextEmbeddingModelName(modelKey);
-  return sql`text_embedding(${modelName}, ${column})`;
+  return sql`text_embedding(${modelName}, ${text})`;
 };
 
-exports.imageEmbedding = function (modelKey, column) {
+exports.imageEmbedding = function (modelKey, link) {
   const modelName = getImageEmbeddingModelName(modelKey);
-  return sql`image_embedding(${modelName}, ${column})`;
+  return sql`image_embedding(${modelName}, ${link})`;
 };
 
 // distance search literals

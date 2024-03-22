@@ -1,5 +1,7 @@
 export const imageUrl = process.env.TEST_IMAGE_EMBEDDING_EXAMPLE_URL;
 
+export const exampleText = 'my text here';
+
 export const newBooks = [
   {
     embedding: [1, 1, 1],

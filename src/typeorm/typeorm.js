@@ -21,14 +21,14 @@ exports.generateImageEmbedding = function (modelKey) {
 };
 
 // embedding literals
-exports.textEmbedding = function (modelKey, column) {
+exports.textEmbedding = function (modelKey, paramName) {
   const modelName = getTextEmbeddingModelName(modelKey);
-  return `text_embedding('${modelName}', "${column}")`;
+  return `text_embedding('${modelName}', :${paramName})`;
 };
 
-exports.imageEmbedding = function (modelKey, column) {
+exports.imageEmbedding = function (modelKey, paramName) {
   const modelName = getImageEmbeddingModelName(modelKey);
-  return `image_embedding('${modelName}', "${column}")`;
+  return `image_embedding('${modelName}', :${paramName})`;
 };
 
 // distance search literals

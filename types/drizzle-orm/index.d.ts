@@ -9,8 +9,8 @@ export function createLanternExtrasExtension(): SQLWrapper;
 export function generateTextEmbedding(modelKey: TextEmbeddingModelType, value: string): PgColumn;
 export function generateImageEmbedding(modelKey: ImageEmbeddingModelType, value: string): PgColumn;
 
-export function textEmbedding(modelKey: TextEmbeddingModelType, column: Column): PgColumn;
-export function imageEmbedding(modelKey: ImageEmbeddingModelType, column: Column): PgColumn;
+export function textEmbedding(modelKey: TextEmbeddingModelType, column: string): PgColumn;
+export function imageEmbedding(modelKey: ImageEmbeddingModelType, column: string): PgColumn;
 
 export function l2Distance(column: Column, value: number[] | string): PgColumn;
 export function cosineDistance(column: Column, value: number[] | string): PgColumn;

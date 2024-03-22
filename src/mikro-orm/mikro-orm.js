@@ -33,14 +33,14 @@ function extend(em) {
   };
 
   // embedding literals
-  em.textEmbedding = function (modelKey, value) {
+  em.textEmbedding = function (modelKey, text) {
     const modelName = getTextEmbeddingModelName(modelKey);
-    return embedding(`text_embedding('${modelName}', ??)`, [value], em);
+    return embedding(`text_embedding('${modelName}', ?)`, [text], em);
   };
 
-  em.imageEmbedding = function (modelKey, value) {
+  em.imageEmbedding = function (modelKey, url) {
     const modelName = getImageEmbeddingModelName(modelKey);
-    return embedding(`image_embedding('${modelName}', ??)`, [value], em);
+    return embedding(`image_embedding('${modelName}', ?)`, [url], em);
   };
 
   // distance search literals

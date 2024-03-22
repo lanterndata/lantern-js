@@ -9,7 +9,7 @@ import { TextEmbeddingModels, ImageEmbeddingModels } from 'lanterndata/embedding
 import { pgTable, serial, text, real, integer } from 'drizzle-orm/pg-core';
 import { createLanternExtension, createLanternExtrasExtension, generateTextEmbedding, generateImageEmbedding, l2Distance, cosineDistance, hammingDistance, textEmbedding, imageEmbedding } from 'lanterndata/drizzle-orm';
 import sqlQueries from './_common/sql.mjs';
-import { imageUrl, newBooks, newMovies, newBooks768Dim, newBooks512Dim } from './_fixtures/fixtures.mjs';
+import { imageUrl, exampleText, newBooks, newMovies, newBooks768Dim, newBooks512Dim } from './_fixtures/fixtures.mjs';
 
 const { BAAI_BGE_BASE_EN } = TextEmbeddingModels;
 const { CLIP_VIT_B_32_VISUAL } = ImageEmbeddingModels;
@@ -123,51 +123,13 @@ describe('Drizzle-orm', () => {
   });
 
   it('should create simple text embedding', async () => {
-    const result = await db.execute(generateTextEmbedding(BAAI_BGE_BASE_EN, 'hello world'));
+    const result = await db.execute(generateTextEmbedding(BAAI_BGE_BASE_EN, exampleText));
     assert.equal(result[0].text_embedding.length, 768);
   });
 
   it('should create simple image embedding', async () => {
     const result = await db.execute(generateImageEmbedding(CLIP_VIT_B_32_VISUAL, imageUrl));
     assert.equal(result[0].image_embedding.length, 512);
-  });
-
-  it('select text embedding based on book names in the table', async () => {
-    const bookTextEmbeddings = await db
-      .select({
-        name: Book.name,
-        text_embedding: textEmbedding(BAAI_BGE_BASE_EN, Book.name),
-      })
-      .from(Book)
-      .where(isNotNull(Book.name))
-      .limit(5);
-
-    assert.equal(bookTextEmbeddings.length, 2);
-
-    bookTextEmbeddings.forEach((book) => {
-      assert(book.name);
-      assert(Array.isArray(book.text_embedding));
-      assert(book.text_embedding.length > 0);
-    });
-  });
-
-  it('select image embedding based on book urls in the table', async () => {
-    const bookImageEmbeddings = await db
-      .select({
-        url: Book.url,
-        image_embedding: imageEmbedding(CLIP_VIT_B_32_VISUAL, Book.url),
-      })
-      .from(Book)
-      .where(isNotNull(Book.url))
-      .limit(5);
-
-    assert.equal(bookImageEmbeddings.length, 2);
-
-    bookImageEmbeddings.forEach((book) => {
-      assert(book.url);
-      assert(Array.isArray(book.image_embedding));
-      assert(book.image_embedding.length > 0);
-    });
   });
 
   it('should find using Cosine distance and do text_embedding generation', async () => {
@@ -182,7 +144,7 @@ describe('Drizzle-orm', () => {
       .select()
       .from(Book)
       .where(isNotNull(Book.name))
-      .orderBy(asc(cosineDistance(Book.embedding, textEmbedding(BAAI_BGE_BASE_EN, Book.name))))
+      .orderBy(asc(cosineDistance(Book.embedding, textEmbedding(BAAI_BGE_BASE_EN, exampleText))))
       .limit(2);
 
     assert.equal(bookEmbeddingsOrderd.length, 2);
@@ -200,7 +162,7 @@ describe('Drizzle-orm', () => {
       .select()
       .from(Book)
       .where(isNotNull(Book.url))
-      .orderBy(desc(l2Distance(Book.embedding, imageEmbedding(CLIP_VIT_B_32_VISUAL, Book.url))))
+      .orderBy(desc(l2Distance(Book.embedding, imageEmbedding(CLIP_VIT_B_32_VISUAL, imageUrl))))
       .limit(2);
 
     assert.equal(bookEmbeddingsOrderd.length, 2);

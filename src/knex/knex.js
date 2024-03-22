@@ -23,14 +23,14 @@ knex.QueryBuilder.extend('generateImageEmbedding', function (modelKey, value) {
 });
 
 // embedding literals
-knex.QueryBuilder.extend('textEmbedding', function (modelKey, value) {
+knex.QueryBuilder.extend('textEmbedding', function (modelKey, text) {
   const modelName = getTextEmbeddingModelName(modelKey);
-  return this.client.raw(`text_embedding('${modelName}', ??)`, [value]);
+  return this.client.raw(`text_embedding('${modelName}', ?)`, [text]);
 });
 
-knex.QueryBuilder.extend('imageEmbedding', function (modelKey, value) {
+knex.QueryBuilder.extend('imageEmbedding', function (modelKey, url) {
   const modelName = getImageEmbeddingModelName(modelKey);
-  return this.client.raw(`image_embedding('${modelName}', ??)`, [value]);
+  return this.client.raw(`image_embedding('${modelName}', ?)`, [url]);
 });
 
 // distance search literals

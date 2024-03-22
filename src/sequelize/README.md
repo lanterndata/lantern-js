@@ -40,7 +40,7 @@ await sequelize.query(`
 `);
 ```
 
-## Vector Searches
+## Vector search methods
 
 You can performe vectore search using those distance methods.
 
@@ -61,9 +61,7 @@ await Book.findAll({
 });
 ```
 
-## Generate Embeddings
-
-### Static generation
+## Embedding generation
 
 ```js
 import { TextEmbeddingModels, ImageEmbeddingModels } from 'lanterndata/embeddings';
@@ -79,56 +77,47 @@ const [result] = await sequelize.generateImageEmbedding(ImageEmbeddingModels.CLI
 console.log(result[0].image_embedding);
 ```
 
-### Dynamic generation
+## Vector searche with embedding generation
 
 ```js
+import lantern from 'lanterndata/sequelize';
+import { Sequelize } from 'sequelize';
+
 import { TextEmbeddingModels, ImageEmbeddingModels } from 'lanterndata/embeddings';
 
-const {BAAI_BGE_BASE_EN} = TextEmbeddingModels;
-const {CLIP_VIT_B_32_VISUAL} = ImageEmbeddingModels;
 
-// text embeddings
-const bookTextEmbeddings = await Book.findAll({
-  attributes: ['name', sequelize.textEmbedding(BAAI_BGE_BASE_EN, 'name')],
-  where: { name: { [Op.not]: null } },
-  limit: 5,
-  raw: true,
-});
+const sequelize = Sequelize();
 
-// [{ name: "...", text_embedding: [...] }]
-console.log(bookTextEmbeddings);
+// extends the sequelize client
+lantern.extend(sequelize);
 
-// image embeddings
-const bookImageEmbeddings = await Book.findAll({
-  attributes: ['url', sequelize.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'url')],
-  where: { url: { [Op.not]: null } },
-  limit: 5,
-  raw: true,
-});
+const { BAAI_BGE_BASE_EN } = TextEmbeddingModels;
+const { CLIP_VIT_B_32_VISUAL } = ImageEmbeddingModels;
 
-// [{ url: "...", image_embedding: [...] }]
-console.log(bookImageEmbeddings);
-```
+const text = 'hello worls';
+const imageUrl = 'https://lantern.dev/images/home/footer.png';
 
-## Vector Searches with embedding generation
-
-```js
-import { ImageEmbeddingModels } from 'lanterndata/embeddings';
-
-const {CLIP_VIT_B_32_VISUAL} = ImageEmbeddingModels;
-
-const bookEmbeddingsOrderd = await Book.findAll({
-  order: [[sequelize.l2Distance('embedding', sequelize.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'url')), 'desc']],
-  where: { url: { [Op.not]: null } },
+await Book.findAll({
+  order: [[sequelize.cosineDistance('embedding', sequelize.textEmbedding(BAAI_BGE_BASE_EN, 'yourParamName')), 'desc']],
   limit: 2,
+  replacements: {
+    yourParamName: text,
+  },
+});
+
+await Book.findAll({
+  order: [[sequelize.l2Distance('embedding', sequelize.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'yourParamName')), 'desc']],
+  limit: 2,
+  replacements: {
+    yourParamName: imageUrl,
+  },
 });
 ```
 
-Corresponding SQL code:
+Corresponding SQL code (example):
 
 ```sql
 SELECT * FROM "books"
-WHERE "url" IS NOT NULL
-ORDER BY "embedding" <-> image_embedding('clip/ViT-B-32-visual', "url") DESC
+ORDER BY "embedding" <-> image_embedding('clip/ViT-B-32-visual', "...") DESC
 LIMIT 2;
 ```

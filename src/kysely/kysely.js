@@ -22,14 +22,14 @@ function extend(sql) {
   };
 
   // embedding literals
-  sql.textEmbedding = function (modelKey, value) {
+  sql.textEmbedding = function (modelKey, text) {
     const modelName = getTextEmbeddingModelName(modelKey);
-    return sql`text_embedding(${modelName}, ${sql.ref(value)})`;
+    return sql`text_embedding(${modelName}, ${text})`;
   };
 
-  sql.imageEmbedding = function (modelKey, value) {
+  sql.imageEmbedding = function (modelKey, url) {
     const modelName = getImageEmbeddingModelName(modelKey);
-    return sql`image_embedding(${modelName}, ${sql.ref(value)})`;
+    return sql`image_embedding(${modelName}, ${url})`;
   };
 
   // distance search literals

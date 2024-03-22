@@ -7,7 +7,7 @@ import { TextEmbeddingModels, ImageEmbeddingModels } from 'lanterndata/embedding
 
 import sqlQueries from './_common/sql.mjs';
 
-import { imageUrl, newBooks, newMovies, newBooks768Dim, newBooks512Dim } from './_fixtures/fixtures.mjs';
+import { imageUrl, exampleText, newBooks, newMovies, newBooks768Dim, newBooks512Dim } from './_fixtures/fixtures.mjs';
 
 const { BAAI_BGE_BASE_EN } = TextEmbeddingModels;
 const { CLIP_VIT_B_32_VISUAL } = ImageEmbeddingModels;
@@ -149,47 +149,13 @@ describe('Mikro-orm', () => {
   });
 
   it('should create simple text embedding', async () => {
-    const result = await em.generateTextEmbedding(BAAI_BGE_BASE_EN, 'hello world');
+    const result = await em.generateTextEmbedding(BAAI_BGE_BASE_EN, exampleText);
     assert.equal(result[0].text_embedding.length, 768);
   });
 
   it('should create simple image embedding', async () => {
     const result = await em.generateImageEmbedding(CLIP_VIT_B_32_VISUAL, imageUrl);
     assert.equal(result[0].image_embedding.length, 512);
-  });
-
-  it('select text embedding based on book names in the table', async () => {
-    const bookTextEmbeddings = await em
-      .qb(Book, 'b1')
-      .select(['name', em.textEmbedding(BAAI_BGE_BASE_EN, 'b1.name')])
-      .where({ name: { $ne: null } })
-      .limit(5)
-      .execute('all');
-
-    assert.equal(bookTextEmbeddings.length, 2);
-
-    bookTextEmbeddings.forEach((book) => {
-      assert(book.name);
-      assert(Array.isArray(book.text_embedding));
-      assert(book.text_embedding.length > 0);
-    });
-  });
-
-  it('select image embedding based on book urls in the table', async () => {
-    const bookImageEmbeddings = await em
-      .qb(Book, 'b1')
-      .select(['url', em.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'b1.url')])
-      .where({ url: { $ne: null } })
-      .limit(5)
-      .execute('all');
-
-    assert.equal(bookImageEmbeddings.length, 2);
-
-    bookImageEmbeddings.forEach((book) => {
-      assert(book.url);
-      assert(Array.isArray(book.image_embedding));
-      assert(book.image_embedding.length > 0);
-    });
   });
 
   it('should find using Cosine distance and do text_embedding generation', async () => {
@@ -209,10 +175,10 @@ describe('Mikro-orm', () => {
     await em.persistAndFlush(books);
 
     const bookEmbeddingsOrderd = await em
-      .qb(Book, 'b1')
+      .qb(Book)
       .select()
       .where({ name: { $ne: null } })
-      .orderBy({ [em.cosineDistance('embedding', em.textEmbedding(BAAI_BGE_BASE_EN, 'b1.name'))]: 'ASC' })
+      .orderBy({ [em.cosineDistance('embedding', em.textEmbedding(BAAI_BGE_BASE_EN, exampleText))]: 'ASC' })
       .limit(2)
       .execute('all');
 
@@ -236,10 +202,10 @@ describe('Mikro-orm', () => {
     await em.persistAndFlush(books);
 
     const bookEmbeddingsOrderd = await em
-      .qb(Book, 'b1')
+      .qb(Book)
       .select('*')
       .where({ url: { $ne: null } })
-      .orderBy({ [em.l2Distance('embedding', em.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'b1.url'))]: 'DESC' })
+      .orderBy({ [em.l2Distance('embedding', em.imageEmbedding(CLIP_VIT_B_32_VISUAL, imageUrl))]: 'DESC' })
       .limit(2)
       .execute('all');
 

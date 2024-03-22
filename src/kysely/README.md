@@ -36,7 +36,7 @@ await sql.raw(`
 `).execute(db);
 ```
 
-## Vector Searches
+## Vector search methods
 
 You can performe vectore search using those distance methods.
 
@@ -63,9 +63,7 @@ await db
   .execute();
 ```
 
-## Generate Embeddings
-
-### Static generation
+## Embedding generation
 
 ```js
 import { sql } from 'kysely';
@@ -86,60 +84,43 @@ const embedding = await sql.generateImageEmbedding(ImageEmbeddingModels.CLIP_VIT
 console.log(embedding.rows[0].image_embedding);
 ```
 
-### Dynamic generation
+## Vector searche with embedding generation
 
 ```js
 import { sql } from 'kysely';
 import { extend } from 'lanterndata/kysely';
 import { TextEmbeddingModels, ImageEmbeddingModels } from 'lanterndata/embeddings';
 
+const { BAAI_BGE_BASE_EN } = TextEmbeddingModels;
+const { CLIP_VIT_B_32_VISUAL } = ImageEmbeddingModels;
+
+const text = 'hello worls';
+const imageUrl = 'https://lantern.dev/images/home/footer.png';
+
 // const db = ...
 extend(sql);
 
-// text embeddings
-const selectLiteral = sql.textEmbedding(TextEmbeddingModels.BAAI_BGE_BASE_EN, 'name');
-const bookEmbeddings = await db
-    .selectFrom('books')
-    .select(['name', selectLiteral])
-    .where('name', 'is not', null)
-    .limit(5)
-    .execute();
-
-// [{ name: "...", text_embedding: [...] }]
-console.log(bookTextEmbeddings);
-
-// image embeddings
-const selectLiteral = sql.imageEmbedding(ImageEmbeddingModels.CLIP_VIT_B_32_VISUAL, 'url');
-const bookEmbeddings = await db
-    .selectFrom('books')
-    .select(['url', selectLiteral])
-    .where('url', 'is not', null)
-    .limit(5)
-    .execute();
-
-// [{ url: "...", image_embedding: [...] }]
-console.log(bookImageEmbeddings);
-```
-
-## Vector Searches with embedding generation
-
-```js
-const { CLIP_VIT_B_32_VISUAL } = ImageEmbeddingModels;
-
-const bookEmbeddingsOrderd = await db
+// distance search with text embedding generation
+await db
   .selectFrom('books')
   .selectAll()
-  .where('url', 'is not', null)
-  .orderBy(sql.l2Distance('embedding', sql.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'url')), 'desc')
+  .orderBy(sql.cosineDistance('embedding', sql.textEmbedding(BAAI_BGE_BASE_EN, text)), 'desc')
+  .limit(2)
+  .execute();
+
+// distance search with image embedding generation
+await db
+  .selectFrom('books')
+  .selectAll()
+  .orderBy(sql.l2Distance('embedding', sql.imageEmbedding(CLIP_VIT_B_32_VISUAL, imageUrl)), 'desc')
   .limit(2)
   .execute();
 ```
 
-Corresponding SQL code:
+Corresponding SQL code (example):
 
 ```sql
 SELECT * FROM "books"
-WHERE "url" IS NOT NULL
-ORDER BY "embedding" <-> image_embedding('clip/ViT-B-32-visual', "url") DESC
+ORDER BY "embedding" <-> image_embedding('clip/ViT-B-32-visual', "...") DESC
 LIMIT 2;
 ```

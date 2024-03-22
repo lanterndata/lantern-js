@@ -46,7 +46,7 @@ await knex.raw(`
 `);
 ```
 
-## Vector Searches
+## Vector search methods
 
 You can performe vectore search using those distance methods.
 
@@ -66,9 +66,7 @@ await Book.query()
   .limit(5);
 ```
 
-## Generate Embeddings
-
-### Static generation
+## Embedding generation
 
 ```js
 import Knex from 'knex';
@@ -88,59 +86,49 @@ const embedding = await knex.generateImageEmbedding(ImageEmbeddingModels.CLIP_VI
 console.log(embedding.rows[0].image_embedding);
 ```
 
-### Dynamic generation
+## Vector searche with embedding generation
 
 ```js
 import Knex from 'knex';
-import { textEmbedding, imageEmbedding } from 'lanterndata/objection';
+
+import { l2Distance, cosineDistance, textEmbedding, imageEmbedding } from 'lanterndata/objection';
 import { TextEmbeddingModels, ImageEmbeddingModels } from 'lanterndata/embeddings';
 
 const knex = Knex();
 
-// text embeddings
-const selectLiteral = textEmbedding(TextEmbeddingModels.BAAI_BGE_BASE_EN, 'name');
-const bookTextEmbeddings = Book.query()
-    .select('name')
-    .select(selectLiteral)
-    .whereNotNull('name');
+const { BAAI_BGE_BASE_EN } = TextEmbeddingModels;
+const { CLIP_VIT_B_32_VISUAL } = ImageEmbeddingModels;
 
-// [{ name: "...", text_embedding: [...] }]
-console.log(bookTextEmbeddings);
+const text = 'hello worls';
+const imageUrl = 'https://lantern.dev/images/home/footer.png';
 
-// image embeddings
-const selectLiteral = imageEmbedding(ImageEmbeddingModels.BAAI_BGE_BASE_EN, 'url');
-const bookImageEmbeddings = Book.query()
-    .select('url')
-    .select(selectLiteral)
-    .whereNotNull('url');
+// distance search with text embedding generation
+await Book.query()
+  .orderBy(
+    cosineDistance(
+      'embedding',
+      textEmbedding(BAAI_BGE_BASE_EN, text)
+    ),
+    'desc'
+  )
+  .limit(2);
 
-// [{ url: "...", image_embedding: [...] }]
-console.log(bookImageEmbeddings);
-```
-
-## Vector Searches with embedding generation
-
-```js
-import { l2Distance, imageEmbedding } from 'lanterndata/objection';
-import { ImageEmbeddingModels } from 'lanterndata/embeddings';
-
-const bookEmbeddingsOrderd = await Book.query()
-  .whereNotNull('url')
+// distance search with image embedding generation
+await Book.query()
   .orderBy(
     l2Distance(
       'embedding',
-      imageEmbedding(ImageEmbeddingModels.CLIP_VIT_B_32_VISUAL, 'url')
+      imageEmbedding(CLIP_VIT_B_32_VISUAL, imageUrl)
     ),
     'desc'
   )
   .limit(2);
 ```
 
-Corresponding SQL code:
+Corresponding SQL code (example):
 
 ```sql
 SELECT * FROM "books"
-WHERE "url" IS NOT NULL
-ORDER BY "embedding" <-> image_embedding('clip/ViT-B-32-visual', "url") DESC
+ORDER BY "embedding" <-> image_embedding('clip/ViT-B-32-visual', "...") DESC
 LIMIT 2;
 ```

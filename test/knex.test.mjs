@@ -7,7 +7,7 @@ import { TextEmbeddingModels, ImageEmbeddingModels } from 'lanterndata/embedding
 
 import sqlQueries from './_common/sql.mjs';
 
-import { imageUrl, newBooks, newMovies, newBooks768Dim, newBooks512Dim } from './_fixtures/fixtures.mjs';
+import { imageUrl, exampleText, newBooks, newMovies, newBooks768Dim, newBooks512Dim } from './_fixtures/fixtures.mjs';
 
 const { BAAI_BGE_BASE_EN } = TextEmbeddingModels;
 const { CLIP_VIT_B_32_VISUAL } = ImageEmbeddingModels;
@@ -113,39 +113,13 @@ describe('Knex', () => {
   });
 
   it('should create simple text embedding', async () => {
-    const result = await knex.generateTextEmbedding(BAAI_BGE_BASE_EN, 'hello world');
+    const result = await knex.generateTextEmbedding(BAAI_BGE_BASE_EN, exampleText);
     assert.equal(result.rows[0].text_embedding.length, 768);
   });
 
   it('should create simple image embedding', async () => {
     const result = await knex.generateImageEmbedding(CLIP_VIT_B_32_VISUAL, imageUrl);
     assert.equal(result.rows[0].image_embedding.length, 512);
-  });
-
-  it('select text embedding based on book names in the table', async () => {
-    const selectLiteral = knex.textEmbedding(BAAI_BGE_BASE_EN, 'name');
-    const bookEmbeddings = await knex('books').select('name').select(selectLiteral).whereNotNull('name');
-
-    assert.equal(bookEmbeddings.length, 2);
-
-    bookEmbeddings.forEach((book) => {
-      assert(book.name);
-      assert(Array.isArray(book.text_embedding));
-      assert(book.text_embedding.length > 0);
-    });
-  });
-
-  it('select image embedding based on book urls in the table', async () => {
-    const selectLiteral = knex.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'url');
-    const bookEmbeddings = await knex('books').select('url').select(selectLiteral).whereNotNull('url');
-
-    assert.equal(bookEmbeddings.length, 2);
-
-    bookEmbeddings.forEach((book) => {
-      assert(book.url);
-      assert(Array.isArray(book.image_embedding));
-      assert(book.image_embedding.length > 0);
-    });
   });
 
   it('should find using Cosine distance and do text_embedding generation', async () => {
@@ -158,7 +132,7 @@ describe('Knex', () => {
 
     const bookEmbeddingsOrderd = await knex('books')
       .whereNotNull('name')
-      .orderBy(knex.cosineDistance('embedding', knex.textEmbedding(BAAI_BGE_BASE_EN, 'name')), 'asc')
+      .orderBy(knex.cosineDistance('embedding', knex.textEmbedding(BAAI_BGE_BASE_EN, exampleText)), 'asc')
       .limit(2);
 
     assert.equal(bookEmbeddingsOrderd.length, 2);
@@ -174,7 +148,7 @@ describe('Knex', () => {
 
     const bookEmbeddingsOrderd = await knex('books')
       .whereNotNull('url')
-      .orderBy(knex.l2Distance('embedding', knex.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'url')), 'desc')
+      .orderBy(knex.l2Distance('embedding', knex.imageEmbedding(CLIP_VIT_B_32_VISUAL, imageUrl)), 'desc')
       .limit(2);
 
     assert.equal(bookEmbeddingsOrderd.length, 2);

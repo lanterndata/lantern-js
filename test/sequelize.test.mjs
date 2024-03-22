@@ -7,7 +7,7 @@ import { TextEmbeddingModels, ImageEmbeddingModels } from 'lanterndata/embedding
 
 import sqlQueries from './_common/sql.mjs';
 
-import { imageUrl, newBooks, newMovies, newBooks768Dim, newBooks512Dim } from './_fixtures/fixtures.mjs';
+import { imageUrl, newBooks, newMovies, newBooks768Dim, newBooks512Dim, exampleText } from './_fixtures/fixtures.mjs';
 
 const { BAAI_BGE_BASE_EN } = TextEmbeddingModels;
 const { CLIP_VIT_B_32_VISUAL } = ImageEmbeddingModels;
@@ -153,40 +153,6 @@ describe('Sequelize', () => {
     assert.equal(result[0].image_embedding.length, 512);
   });
 
-  it('select text embedding based on book names in the table', async () => {
-    const bookTextEmbeddings = await Book.findAll({
-      attributes: ['name', sequelize.textEmbedding(BAAI_BGE_BASE_EN, 'name')],
-      where: { name: { [Op.not]: null } },
-      limit: 5,
-      raw: true,
-    });
-
-    assert.equal(bookTextEmbeddings.length, 2);
-
-    bookTextEmbeddings.forEach((book) => {
-      assert(book.name);
-      assert(Array.isArray(book.text_embedding));
-      assert(book.text_embedding.length > 0);
-    });
-  });
-
-  it('select image embedding based on book urls in the table', async () => {
-    const bookImageEmbeddings = await Book.findAll({
-      attributes: ['url', sequelize.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'url')],
-      where: { url: { [Op.not]: null } },
-      limit: 5,
-      raw: true,
-    });
-
-    assert.equal(bookImageEmbeddings.length, 2);
-
-    bookImageEmbeddings.forEach((book) => {
-      assert(book.url);
-      assert(Array.isArray(book.image_embedding));
-      assert(book.image_embedding.length > 0);
-    });
-  });
-
   it('should find using Cosine distance and do text_embedding generation', async () => {
     await Book.destroy({ where: {} });
 
@@ -196,9 +162,12 @@ describe('Sequelize', () => {
     await Book.bulkCreate(newBooks768Dim);
 
     const bookEmbeddingsOrderd = await Book.findAll({
-      order: [[sequelize.cosineDistance('embedding', sequelize.textEmbedding(BAAI_BGE_BASE_EN, 'name')), 'asc']],
+      order: [[sequelize.cosineDistance('embedding', sequelize.textEmbedding(BAAI_BGE_BASE_EN, 'yourParamName')), 'asc']],
       where: { name: { [Op.not]: null } },
       limit: 2,
+      replacements: {
+        yourParamName: exampleText,
+      },
     });
 
     assert.equal(bookEmbeddingsOrderd.length, 2);
@@ -213,9 +182,12 @@ describe('Sequelize', () => {
     await Book.bulkCreate(newBooks512Dim);
 
     const bookEmbeddingsOrderd = await Book.findAll({
-      order: [[sequelize.l2Distance('embedding', sequelize.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'url')), 'desc']],
+      order: [[sequelize.l2Distance('embedding', sequelize.imageEmbedding(CLIP_VIT_B_32_VISUAL, 'yourParamName')), 'desc']],
       where: { url: { [Op.not]: null } },
       limit: 2,
+      replacements: {
+        yourParamName: imageUrl,
+      },
     });
 
     assert.equal(bookEmbeddingsOrderd.length, 2);

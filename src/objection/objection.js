@@ -6,14 +6,14 @@ const { fromSql, toSql } = require('../_common/utils/sql');
 const { getTextEmbeddingModelName, getImageEmbeddingModelName } = require('../_embeddings/models');
 
 // embedding literals
-exports.textEmbedding = function (modelKey, value) {
+exports.textEmbedding = function (modelKey, text) {
   const modelName = getTextEmbeddingModelName(modelKey);
-  return objection.raw(`text_embedding('${modelName}', ??)`, [value]);
+  return objection.raw(`text_embedding('${modelName}', ?)`, [text]);
 };
 
-exports.imageEmbedding = function (modelKey, value) {
+exports.imageEmbedding = function (modelKey, url) {
   const modelName = getImageEmbeddingModelName(modelKey);
-  return objection.raw(`image_embedding('${modelName}', ??)`, [value]);
+  return objection.raw(`image_embedding('${modelName}', ?)`, [url]);
 };
 
 // distance search literals

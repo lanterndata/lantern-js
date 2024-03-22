@@ -8,7 +8,7 @@ import { TextEmbeddingModels, ImageEmbeddingModels } from 'lanterndata/embedding
 
 import sqlQueries from './_common/sql.mjs';
 
-import { imageUrl, newBooks, newMovies, newBooks768Dim, newBooks512Dim } from './_fixtures/fixtures.mjs';
+import { imageUrl, exampleText, newBooks, newMovies, newBooks768Dim, newBooks512Dim } from './_fixtures/fixtures.mjs';
 
 const { BAAI_BGE_BASE_EN } = TextEmbeddingModels;
 const { CLIP_VIT_B_32_VISUAL } = ImageEmbeddingModels;
@@ -132,39 +132,13 @@ describe('Objection.js', () => {
 
   it('should create simple text embedding', async () => {
     const bookKnex = Book.knex();
-    const result = await bookKnex.generateTextEmbedding(BAAI_BGE_BASE_EN, 'hello world');
+    const result = await bookKnex.generateTextEmbedding(BAAI_BGE_BASE_EN, exampleText);
     assert.equal(result.rows[0].text_embedding.length, 768);
   });
 
   it('should create simple image embedding', async () => {
     const result = await knex.generateImageEmbedding(CLIP_VIT_B_32_VISUAL, imageUrl);
     assert.equal(result.rows[0].image_embedding.length, 512);
-  });
-
-  it('select text embedding based on book names in the table', async () => {
-    const selectLiteral = textEmbedding(BAAI_BGE_BASE_EN, 'name');
-    const bookEmbeddings = await Book.query().select('name').select(selectLiteral).whereNotNull('name');
-
-    assert.equal(bookEmbeddings.length, 2);
-
-    bookEmbeddings.forEach((book) => {
-      assert(book.name);
-      assert(Array.isArray(book.text_embedding));
-      assert(book.text_embedding.length > 0);
-    });
-  });
-
-  it('select image embedding based on book urls in the table', async () => {
-    const selectLiteral = imageEmbedding(CLIP_VIT_B_32_VISUAL, 'url');
-    const bookEmbeddings = await Book.query().select('url').select(selectLiteral).whereNotNull('url');
-
-    assert.equal(bookEmbeddings.length, 2);
-
-    bookEmbeddings.forEach((book) => {
-      assert(book.url);
-      assert(Array.isArray(book.image_embedding));
-      assert(book.image_embedding.length > 0);
-    });
   });
 
   it('should find using Cosine distance and do text_embedding generation', async () => {
@@ -177,7 +151,7 @@ describe('Objection.js', () => {
 
     const bookEmbeddingsOrdered = await Book.query()
       .whereNotNull('name')
-      .orderBy(cosineDistance('embedding', textEmbedding(BAAI_BGE_BASE_EN, 'name')), 'asc')
+      .orderBy(cosineDistance('embedding', textEmbedding(BAAI_BGE_BASE_EN, exampleText)), 'asc')
       .limit(2);
 
     assert.equal(bookEmbeddingsOrdered.length, 2);
@@ -193,7 +167,7 @@ describe('Objection.js', () => {
 
     const bookEmbeddingsOrdered = await Book.query()
       .whereNotNull('url')
-      .orderBy(l2Distance('embedding', imageEmbedding(CLIP_VIT_B_32_VISUAL, 'url')), 'desc')
+      .orderBy(l2Distance('embedding', imageEmbedding(CLIP_VIT_B_32_VISUAL, imageUrl)), 'desc')
       .limit(2);
 
     assert.equal(bookEmbeddingsOrdered.length, 2);

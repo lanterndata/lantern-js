@@ -62,7 +62,7 @@ await AppDataSource.query(`
 `);
 ```
 
-## Vector Searches
+## Vector search methods
 
 You can performe vectore search using those distance methods.
 
@@ -93,9 +93,7 @@ await bookRepository
   .getMany();
 ```
 
-## Generate Embeddings
-
-### Static generation
+## Embedding generation
 
 ```js
 import { generateTextEmbedding, generateImageEmbedding } from 'lanterndata/typeorm';
@@ -115,56 +113,37 @@ const embedding = await AppDataSource.query(generateImageEmbedding(CLIP_VIT_B_32
 console.log(embedding[0].image_embedding);
 ```
 
-### Dynamic generation
+## Vector searche with embedding generation
 
 ```js
-import { textEmbedding, imageEmbedding } from 'lanterndata/typeorm';
-import { TextEmbeddingModels, ImageEmbeddingModels } from 'lanterndata/embeddings';
+import { l2Distance, cosineDistance, textEmbedding, imageEmbedding } from 'lanterndata/typeorm';
+import { ImageEmbeddingModels, TextEmbeddingModels } from 'lanterndata/embeddings';
 
-// text embeddings
-const bookTextEmbeddings = await bookRepository
-    .createQueryBuilder('books')
-    .select('name')
-    .addSelect(textEmbedding(TextEmbeddingModels.BAAI_BGE_BASE_EN, 'name'))
-    .where('name IS NOT NULL')
-    .getRawMany();
-
-// [{ name: "...", text_embedding: [...] }]
-console.log(bookTextEmbeddings);
-
-// image embeddings
-const bookImageEmbeddings = await bookRepository
-    .createQueryBuilder('books')
-    .select('url')
-    .addSelect(imageEmbedding(ImageEmbeddingModels.CLIP_VIT_B_32_VISUAL, 'url'))
-    .where('url IS NOT NULL')
-    .getRawMany();
-
-// [{ url: "...", image_embedding: [...] }]
-console.log(bookImageEmbeddings);
-```
-
-## Vector Searches with embedding generation
-
-```js
-import { l2Distance, imageEmbedding } from 'lanterndata/typeorm';
-import { ImageEmbeddingModels } from 'lanterndata/embeddings';
-
+const { BAAI_BGE_BASE_EN } = TextEmbeddingModels;
 const { CLIP_VIT_B_32_VISUAL } = ImageEmbeddingModels;
 
-const bookEmbeddingsOrderd = await bookRepository
+const text = 'hello worls';
+const imageUrl = 'https://lantern.dev/images/home/footer.png';
+
+await bookRepository
   .createQueryBuilder('books')
-  .orderBy(l2Distance('embedding', imageEmbedding(CLIP_VIT_B_32_VISUAL, 'url')), 'DESC')
-  .where('url IS NOT NULL')
+  .orderBy(cosineDistance('embedding', textEmbedding(BAAI_BGE_BASE_EN, 'yourParamName')), 'DESC')
+  .setParameters({ yourParamName: text })
+  .limit(2)
+  .getMany();
+
+await bookRepository
+  .createQueryBuilder('books')
+  .orderBy(l2Distance('embedding', imageEmbedding(CLIP_VIT_B_32_VISUAL, 'yourParamName')), 'DESC')
+  .setParameters({ yourParamName: imageUrl })
   .limit(2)
   .getMany();
 ```
 
-Corresponding SQL code:
+Corresponding SQL code (example):
 
 ```sql
 SELECT * FROM "books"
-WHERE "url" IS NOT NULL
-ORDER BY "embedding" <-> image_embedding('clip/ViT-B-32-visual', "url") DESC
+ORDER BY "embedding" <-> image_embedding('clip/ViT-B-32-visual', "...") DESC
 LIMIT 2;
 ```
