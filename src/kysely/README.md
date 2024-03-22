@@ -36,7 +36,7 @@ await sql.raw(`
 `).execute(db);
 ```
 
-## Vector Searches
+## Vector search methods
 
 You can performe vectore search using those distance methods.
 

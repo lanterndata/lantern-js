@@ -33,7 +33,7 @@ const Book = pgTable('books', {
 await client`CREATE INDEX book_index ON books USING lantern_hnsw(embedding dist_l2sq_ops)`;
 ```
 
-## Vector Searches
+## Vector search methods
 
 You can performe vectore search using those distance methods.
 

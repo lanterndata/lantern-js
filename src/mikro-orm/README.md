@@ -50,7 +50,7 @@ const books = booksToInsert.map((book) =>
 await em.persistAndFlush(books);
 ```
 
-## Vector Searches
+## Vector search methods
 
 You can performe vectore search using those distance methods.
 
