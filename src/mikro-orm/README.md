@@ -117,7 +117,7 @@ extend(em);
 const { BAAI_BGE_BASE_EN } = TextEmbeddingModels;
 const { CLIP_VIT_B_32_VISUAL } = ImageEmbeddingModels;
 
-const text = 'hello worls';
+const text = 'hello world';
 const imageUrl = 'https://lantern.dev/images/home/footer.png';
 
 // distance search with text embedding generation
