@@ -153,7 +153,7 @@ LIMIT 2;
 - `openaiEmbedding(OpenAITextEmbeddingModelType, text, [dimension])`
 - `cohereEmbedding(CohereTextEmbeddingModelType, text)`
 
-```
+```js
 import { openaiEmbedding, cohereEmbedding } from 'lanterndata/typeorm';
 import { OpenAITextEmbeddingModelType, CohereTextEmbeddingModelType } from 'lanterndata/embeddings';
 

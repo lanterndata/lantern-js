@@ -127,7 +127,7 @@ LIMIT 2;
 - `openaiEmbedding(OpenAITextEmbeddingModelType, text, [dimension])`
 - `cohereEmbedding(CohereTextEmbeddingModelType, text)`
 
-```
+```js
 import { OpenAITextEmbeddingModelType, CohereTextEmbeddingModelType } from 'lanterndata/embeddings';
 
 sequelize.openaiEmbedding(OpenAITextEmbeddingModelType.ADA_002, 'modelParamName', 'dimensionParamName');
