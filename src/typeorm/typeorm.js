@@ -31,6 +31,16 @@ exports.imageEmbedding = function (modelKey, paramName) {
   return `image_embedding('${modelName}', :${paramName})`;
 };
 
+exports.openaiEmbedding = function (modelKey, paramName, dimensionParamName) {
+  const modelName = getImageEmbeddingModelName(modelKey);
+  return dimensionParamName ? `openai_embedding('${modelName}', :${paramName}, :${dimensionParamName})` : `openai_embedding('${modelName}', :${paramName})`;
+};
+
+exports.cohereEmbedding = function (modelKey, paramName) {
+  const modelName = getTextEmbeddingModelName(modelKey);
+  return `cohere_embedding('${modelName}', :${paramName})`;
+};
+
 // distance search literals
 exports.l2Distance = function (column, param) {
   return distance('<->', column, param);

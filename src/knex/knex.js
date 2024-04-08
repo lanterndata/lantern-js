@@ -33,6 +33,16 @@ knex.QueryBuilder.extend('imageEmbedding', function (modelKey, url) {
   return this.client.raw(`image_embedding('${modelName}', ?)`, [url]);
 });
 
+knex.QueryBuilder.extend('openaiEmbedding', function (modelKey, text, dimension) {
+  const modelName = getTextEmbeddingModelName(modelKey);
+  return dimension ? this.client.raw(`text_embedding('${modelName}', ?, ?)`, [text, dimension]) : this.client.raw(`text_embedding('${modelName}', ?)`, [text]);
+});
+
+knex.QueryBuilder.extend('cohereEmbedding', function (modelKey, text) {
+  const modelName = getImageEmbeddingModelName(modelKey);
+  return this.client.raw(`cohere_embedding('${modelName}', ?)`, [text]);
+});
+
 // distance search literals
 knex.QueryBuilder.extend('l2Distance', function (column, value) {
   return this.client.raw('?? <-> ?', [column, toSql(value)]);

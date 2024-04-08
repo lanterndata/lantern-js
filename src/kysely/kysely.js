@@ -32,6 +32,16 @@ function extend(sql) {
     return sql`image_embedding(${modelName}, ${url})`;
   };
 
+  sql.openaiEmbedding = function (modelKey, text, dimension) {
+    const modelName = getTextEmbeddingModelName(modelKey);
+    return dimension ? sql`openai_embedding(${modelName}, ${text}, ${dimension})` : sql`openai_embedding(${modelName}, ${text})`;
+  };
+
+  sql.cohereEmbedding = function (modelKey, text) {
+    const modelName = getImageEmbeddingModelName(modelKey);
+    return sql`cohere_embedding(${modelName}, ${text})`;
+  };
+
   // distance search literals
   sql.l2Distance = function (column, value) {
     return sql`${sql.ref(column)} <-> ${toSql(value)}`;

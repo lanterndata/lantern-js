@@ -43,6 +43,16 @@ function extend(em) {
     return embedding(`image_embedding('${modelName}', ?)`, [url], em);
   };
 
+  em.openaiEmbedding = function (modelKey, text, dimension) {
+    const modelName = getTextEmbeddingModelName(modelKey);
+    return dimension ? embedding(`openai_embedding('${modelName}', ?, ?)`, [text, dimension], em) : embedding(`openai_embedding('${modelName}', ?)`, [text], em);
+  };
+
+  em.cohereEmbedding = function (modelKey, text) {
+    const modelName = getImageEmbeddingModelName(modelKey);
+    return embedding(`cohere_embedding('${modelName}', ?)`, [text], em);
+  };
+
   // distance search literals
   em.l2Distance = function (column, value) {
     return distance('<->', column, value, em);

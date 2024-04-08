@@ -14,6 +14,8 @@ const TextEmbeddingModels = {
   JINAAI_EMBEDDINGS_V2_SMALL_EN: 'JINAAI_EMBEDDINGS_V2_SMALL_EN',
   JINAAI_EMBEDDINGS_V2_BASE_EN: 'JINAAI_EMBEDDINGS_V2_BASE_EN',
   OPENAI_ADA_002: 'OPENAI_ADA_002',
+  OPENAI_SMALL_3: 'OPENAI_SMALL_3',
+  OPENAI_LARGE_3: 'OPENAI_LARGE_3',
   COHERE_ENGLISH_V3_0: 'COHERE_ENGLISH_V3_0',
   COHERE_MULTILINGUAL_V3_0: 'COHERE_MULTILINGUAL_V3_0',
   COHERE_ENGLISH_V2_0: 'COHERE_ENGLISH_V2_0',
@@ -25,7 +27,11 @@ const TextEmbeddingModels = {
 
 const ImageEmbeddingModels = { CLIP_VIT_B_32_VISUAL: 'CLIP_VIT_B_32_VISUAL' };
 
-const OpenAITextEmbeddingModels = { ADA_002: TextEmbeddingModels.OPENAI_ADA_002 };
+const OpenAITextEmbeddingModels = {
+  ADA_002: TextEmbeddingModels.OPENAI_ADA_002,
+  SMALL_3: TextEmbeddingModels.OPENAI_SMALL_3,
+  LARGE_3: TextEmbeddingModels.OPENAI_LARGE_3,
+};
 
 const CohereTextEmbeddingModels = {
   ENGLISH_V3_0: TextEmbeddingModels.COHERE_ENGLISH_V3_0,

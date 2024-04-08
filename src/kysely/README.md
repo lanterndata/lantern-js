@@ -124,3 +124,15 @@ SELECT * FROM "books"
 ORDER BY "embedding" <-> image_embedding('clip/ViT-B-32-visual', "...") DESC
 LIMIT 2;
 ```
+
+### Other methods
+
+- `openaiEmbedding(OpenAITextEmbeddingModelType, text, [dimension])`
+- `cohereEmbedding(CohereTextEmbeddingModelType, text)`
+
+```
+import { OpenAITextEmbeddingModelType, CohereTextEmbeddingModelType } from 'lanterndata/embeddings';
+
+sql.openaiEmbedding(OpenAITextEmbeddingModelType.ADA_002, 'hello world', 256);
+sql.cohereEmbedding(CohereTextEmbeddingModelType.ENGLISH_V3_0, 'hello world');
+```

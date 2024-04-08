@@ -16,6 +16,16 @@ exports.imageEmbedding = function (modelKey, url) {
   return objection.raw(`image_embedding('${modelName}', ?)`, [url]);
 };
 
+exports.openaiEmbedding = function (modelKey, text, dimension) {
+  const modelName = getImageEmbeddingModelName(modelKey);
+  return dimension ? objection.raw(`openai_embedding('${modelName}', ?, ?)`, [text, dimension]) : objection.raw(`openai_embedding('${modelName}', ?)`, [text]);
+};
+
+exports.cohereEmbedding = function (modelKey, text) {
+  const modelName = getTextEmbeddingModelName(modelKey);
+  return objection.raw(`cohere_embedding('${modelName}', ?)`, [text]);
+};
+
 // distance search literals
 exports.l2Distance = function (column, value) {
   return objection.raw('?? <-> ?', [column, toSql(value)]);

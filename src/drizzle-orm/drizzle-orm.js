@@ -29,9 +29,19 @@ exports.textEmbedding = function (modelKey, text) {
   return sql`text_embedding(${modelName}, ${text})`;
 };
 
-exports.imageEmbedding = function (modelKey, link) {
+exports.imageEmbedding = function (modelKey, url) {
   const modelName = getImageEmbeddingModelName(modelKey);
-  return sql`image_embedding(${modelName}, ${link})`;
+  return sql`image_embedding(${modelName}, ${url})`;
+};
+
+exports.openaiEmbedding = function (modelKey, text, dimension) {
+  const modelName = getTextEmbeddingModelName(modelKey);
+  return dimension ? sql`openai_embedding(${modelName}, ${text}, ${dimension})` : sql`openai_embedding(${modelName}, ${text})`;
+};
+
+exports.cohereEmbedding = function (modelKey, text) {
+  const modelName = getImageEmbeddingModelName(modelKey);
+  return sql`cohere_embedding(${modelName}, ${text})`;
 };
 
 // distance search literals
