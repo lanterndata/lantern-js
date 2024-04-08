@@ -14,6 +14,8 @@ const TextEmbeddingModelsValue = {
   JINAAI_EMBEDDINGS_V2_SMALL_EN: 'jinaai/jina-embeddings-v2-small-en',
   JINAAI_EMBEDDINGS_V2_BASE_EN: 'jinaai/jina-embeddings-v2-base-en',
   OPENAI_ADA_002: 'openai/text-embedding-ada-002',
+  OPENAI_SMALL_3: 'openai/text-embedding-3-small',
+  OPENAI_LARGE_3: 'openai/text-embedding-3-large',
   COHERE_ENGLISH_V3_0: 'cohere/embed-english-v3.0',
   COHERE_MULTILINGUAL_V3_0: 'cohere/embed-multilingual-v3.0',
   COHERE_ENGLISH_V2_0: 'cohere/embed-english-v2.0',

@@ -1,5 +1,5 @@
 import { Sql } from 'kysely';
-import { TextEmbeddingModelType, ImageEmbeddingModelType } from 'lanterndata/types/_embeddings/model-types';
+import { TextEmbeddingModelType, ImageEmbeddingModelType, OpenAITextEmbeddingModelType, CohereTextEmbeddingModelType } from '../_embeddings/model-types';
 
 export * from 'lanterndata/types/_common/utils/sql';
 
@@ -13,6 +13,9 @@ declare module 'kysely' {
 
     textEmbedding(modelKey: TextEmbeddingModelType, value: string): RawBuilder;
     imageEmbedding(modelKey: ImageEmbeddingModelType, value: string): RawBuilder;
+    openaiEmbedding(modelKey: OpenAITextEmbeddingModelType, value: string, dimension?: number): RawBuilder;
+    cohereEmbedding(modelKey: CohereTextEmbeddingModelType, value: string): RawBuilder;
+
     generateTextEmbedding(modelKey: TextEmbeddingModelType, value: string): RawBuilder;
     generateImageEmbedding(modelKey: ImageEmbeddingModelType, value: string): RawBuilder;
 

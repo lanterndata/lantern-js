@@ -1,4 +1,4 @@
-import { TextEmbeddingModelType, ImageEmbeddingModelType } from '../_embeddings/model-types';
+import { TextEmbeddingModelType, ImageEmbeddingModelType, OpenAITextEmbeddingModelType, CohereTextEmbeddingModelType } from '../_embeddings/model-types';
 
 export * from '../_common/utils/sql';
 
@@ -10,6 +10,8 @@ export function generateImageEmbedding(modelKey: ImageEmbeddingModelType, value:
 
 export function textEmbedding(modelKey: TextEmbeddingModelType, column: string): string;
 export function imageEmbedding(modelKey: ImageEmbeddingModelType, column: string): string;
+export function openaiEmbedding(modelKey: OpenAITextEmbeddingModelType, column: string, dimension?: number): string;
+export function cohereEmbedding(modelKey: CohereTextEmbeddingModelType, column: string): string;
 
 export function l2Distance(column: string, value: number[] | string): string;
 export function cosineDistance(column: string, value: number[] | string): string;

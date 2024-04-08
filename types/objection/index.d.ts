@@ -1,5 +1,5 @@
 export * from '../_common/utils/sql';
-import { TextEmbeddingModelType, ImageEmbeddingModelType } from '../_embeddings/model-types';
+import { TextEmbeddingModelType, ImageEmbeddingModelType, OpenAITextEmbeddingModelType, CohereTextEmbeddingModelType } from '../_embeddings/model-types';
 
 declare module 'knex' {
   interface Knex {
@@ -16,6 +16,8 @@ declare module 'knex' {
 
 export function textEmbedding(modelKey: TextEmbeddingModelType, column: string): any;
 export function imageEmbedding(modelKey: ImageEmbeddingModelType, column: string): any;
+export function openaiEmbedding(modelKey: OpenAITextEmbeddingModelType, column: string, dimension?: number): any;
+export function cohereEmbedding(modelKey: CohereTextEmbeddingModelType, column: string): any;
 
 export function l2Distance(column: string, value: number[] | string): any;
 export function cosineDistance(column: string, value: number[] | string): any;
