@@ -130,7 +130,7 @@ LIMIT 2;
 - `openaiEmbedding(OpenAITextEmbeddingModelType, text, [dimension])`
 - `cohereEmbedding(CohereTextEmbeddingModelType, text)`
 
-```
+```js
 import { OpenAITextEmbeddingModelType, CohereTextEmbeddingModelType } from 'lanterndata/embeddings';
 
 sql.openaiEmbedding(OpenAITextEmbeddingModelType.ADA_002, 'hello world', 256);

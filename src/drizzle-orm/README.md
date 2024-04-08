@@ -119,7 +119,7 @@ LIMIT 2;
 - `openaiEmbedding(OpenAITextEmbeddingModelType, text, [dimension])`
 - `cohereEmbedding(CohereTextEmbeddingModelType, text)`
 
-```
+```js
 import { openaiEmbedding, cohereEmbedding } from 'lanterndata/drizzle-orm';
 import { OpenAITextEmbeddingModelType, CohereTextEmbeddingModelType } from 'lanterndata/embeddings';
 
