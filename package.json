@@ -1,10 +1,10 @@
 {
   "name": "lanterndata",
-  "version": "0.0.29",
+  "version": "0.0.30",
   "description": "JavaScript/Typescript ORMs for Lantern Vector Database",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
-    "test": "node test/test.mjs",
+    "test": "node -r dotenv/config test/test.mjs",
     "lint": "eslint ./",
     "lint:fix": "eslint ./ --fix",
     "prettier:format": "prettier --write '**/*.{js,mjs,ts}'",
@@ -23,7 +23,7 @@
     "postgres",
     "postgresql"
   ],
-  "author": "nairihar",
+  "author": "Lantern <support@lantern.dev>",
   "license": "MIT",
   "exports": {
     ".": {
@@ -98,6 +98,7 @@
   "devDependencies": {
     "@mikro-orm/core": "^6.1.4",
     "@mikro-orm/postgresql": "^6.1.4",
+    "dotenv": "^16.4.5",
     "drizzle-orm": "^0.29.3",
     "eslint": "^8.56.0",
     "eslint-config-airbnb-base": "^15.0.0",
