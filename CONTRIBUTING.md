@@ -53,6 +53,12 @@ To check if the code is formatted correctly:
 npm run prettier:check
 ```
 
+To fix linting errors and format the code:
+
+```bash
+npm run format
+```
+
 ## Testing
 
 Ensure all tests pass before submitting a pull request. To run the tests:
