@@ -1,9 +1,11 @@
 name: Test
 on:
   push:
-    branches: ["staging", "main"]
+    branches:
+      - main
+      - staging
   pull_request:
-    branches: ["staging"]
+    types: [opened, synchronize, reopened, ready_for_review]
 
 jobs:
   test-with-lanterndb:
