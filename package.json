@@ -9,7 +9,8 @@
     "lint:fix": "eslint ./ --fix",
     "prettier:format": "prettier --write '**/*.{js,mjs,ts}'",
     "prettier:check": "prettier --check '**/*.{js,mjs,ts}'",
-    "format": "npm run lint:fix && npm run prettier:format"
+    "format": "npm run lint:fix && npm run prettier:format",
+    "coverage": "c8 --reporter=lcov --reporter=text node -r dotenv/config test/test.mjs"
   },
   "repository": {
     "type": "git",
@@ -98,6 +99,8 @@
   "devDependencies": {
     "@mikro-orm/core": "^6.1.4",
     "@mikro-orm/postgresql": "^6.1.4",
+    "c8": "^10.1.2",
+    "codecov": "^3.8.3",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.29.3",
     "eslint": "^8.56.0",

@@ -40,4 +40,12 @@ jobs:
           npm ci
           npm run prettier:check
           npm run lint
-          npm test
+          npm run coverage
+      - name: Upload Coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: true

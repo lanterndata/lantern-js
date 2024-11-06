@@ -67,4 +67,10 @@ Ensure all tests pass before submitting a pull request. To run the tests:
 npm test
 ```
 
+To run the tests with coverage:
+
+```bash
+npm run coverage
+```
+
 Place your test files in the `test/` directory.
