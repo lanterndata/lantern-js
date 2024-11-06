@@ -2,7 +2,10 @@
 
 [lantern](https://github.com/lanterndata/lantern) support for JavaScript/Typescript ORMs.
 
-[![Test Status](https://github.com/lanterndata/lantern-js/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/lanterndata/lantern-js/actions) [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![Test Status](https://github.com/lanterndata/lantern-js/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/lanterndata/lantern-js/actions)
+[![codecov](https://codecov.io/github/lanterndata/lantern-js/graph/badge.svg?token=UPFIX2BGEK)](https://codecov.io/github/lanterndata/lantern-js)
+
 
 ## Installation
 
