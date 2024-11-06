@@ -1,4 +1,4 @@
-# lantern-js
+# Lantern JavaScript / TypeScript Clients
 
 [lantern](https://github.com/lanterndata/lantern) support for JavaScript/Typescript ORMs.
 
